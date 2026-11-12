@@ -25,13 +25,18 @@ function apiKey() {
   return key;
 }
 
-async function pickAvailableModel(): Promise<string> {
+async function pickAvailableModel(exclude: Set<string>): Promise<string> {
   const res = await fetch(`${API}/models?pageSize=200`, { headers: { "x-goog-api-key": apiKey() } });
-  if (!res.ok) throw new NiviError("Não foi possível listar os modelos do Gemini.", "upstream");
+  if (!res.ok) {
+    console.error("[gemini] listar modelos:", res.status, (await res.text()).slice(0, 300));
+    throw new NiviError(`Não foi possível acessar o Gemini (código ${res.status}). Confira GEMINI_API_KEY.`, "upstream");
+  }
   const data = (await res.json()) as {
     models?: { name: string; supportedGenerationMethods?: string[] }[];
   };
-  const usable = (data.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent"));
+  const usable = (data.models ?? []).filter(
+    (m) => m.supportedGenerationMethods?.includes("generateContent") && !exclude.has(m.name.replace(/^models\//, "")),
+  );
   const flash =
     usable.find((m) => /flash/.test(m.name) && !/lite|image|tts|live|exp|preview/.test(m.name)) ??
     usable.find((m) => /flash/.test(m.name)) ??
@@ -40,23 +45,37 @@ async function pickAvailableModel(): Promise<string> {
   return flash.name.replace(/^models\//, "");
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function generate(system: string, turns: ChatTurn[]): Promise<string> {
   let model = resolvedModel ?? process.env.GEMINI_MODEL ?? DEFAULT_MODEL;
+  const tried = new Set<string>();
+  let lastStatus = 0;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    tried.add(model);
     const res = await fetch(`${API}/models/${model}:generateContent`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": apiKey() },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
+        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
       }),
     });
 
-    if (res.status === 404 && attempt === 0) {
+    lastStatus = res.status;
+    if (res.status === 404) {
       // Modelo descontinuado/renomeado: descobre um disponível e tenta de novo.
-      model = await pickAvailableModel();
+      console.warn("[gemini] modelo não encontrado:", model);
+      model = await pickAvailableModel(tried);
+      continue;
+    }
+    if (res.status >= 500) {
+      // Sobrecarga momentânea (comum no plano gratuito): espera e tenta; depois troca de modelo.
+      console.warn("[gemini]", res.status, "em", model);
+      await sleep(800 * (attempt + 1));
+      if (attempt >= 1) model = await pickAvailableModel(tried).catch(() => model);
       continue;
     }
     if (res.status === 429) {
@@ -69,7 +88,7 @@ export async function generate(system: string, turns: ChatTurn[]): Promise<strin
     }
     if (!res.ok) {
       console.error("[gemini]", res.status, (await res.text()).slice(0, 500));
-      throw new NiviError("O Nivi está indisponível agora. Tente novamente em instantes.", "upstream");
+      throw new NiviError(`O Nivi está indisponível agora (código ${res.status}). Tente novamente em instantes.`, "upstream");
     }
 
     resolvedModel = model;
@@ -77,8 +96,11 @@ export async function generate(system: string, turns: ChatTurn[]): Promise<strin
       candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
     };
     const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
-    if (!text) throw new NiviError("Não consegui formular uma resposta. Tente perguntar de outro jeito.", "upstream");
+    if (!text) {
+      console.warn("[gemini] resposta vazia:", JSON.stringify(data).slice(0, 300));
+      throw new NiviError("Não consegui formular uma resposta. Tente perguntar de outro jeito.", "upstream");
+    }
     return text;
   }
-  throw new NiviError("O Nivi está indisponível agora.", "upstream");
+  throw new NiviError(`O Nivi está indisponível agora (código ${lastStatus}). Tente novamente em instantes.`, "upstream");
 }

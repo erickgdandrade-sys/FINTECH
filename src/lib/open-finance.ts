@@ -48,9 +48,15 @@ export const refreshItem = createServerFn({ method: "POST" })
     const user = await requireUser(data.accessToken);
     // Primeiro grava o que já está disponível; depois pede à Pluggy dados novos do banco
     // (quando terminar, o webhook item/updated sincroniza de novo).
-    await syncItem(data.itemId, user.id);
-    const item = await getPluggy().updateItem(data.itemId);
-    return { status: item.status };
+    const r = await syncItem(data.itemId, user.id);
+    try {
+      const item = await getPluggy().updateItem(data.itemId);
+      return { status: item.status, requested: true };
+    } catch (err) {
+      // Pedir nova coleta é opcional (alguns bancos/sandbox recusam ou limitam a frequência).
+      console.warn("[pluggy] updateItem recusado:", err instanceof Error ? err.message : err);
+      return { status: r.item.status, requested: false };
+    }
   });
 
 export const disconnectItem = createServerFn({ method: "POST" })

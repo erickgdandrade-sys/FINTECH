@@ -43,7 +43,13 @@ function Accounts() {
       await reload();
       if (ok) setNotice({ kind: "ok", text: ok });
     } catch (err) {
-      setNotice({ kind: "error", text: err instanceof Error ? err.message : "Algo deu errado." });
+      const text =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Algo deu errado.";
+      setNotice({ kind: "error", text });
     } finally {
       setBusy(null);
     }
@@ -130,7 +136,7 @@ function Accounts() {
               accounts={accounts.filter((a) => a.item_id === item.id)}
               busy={busy}
               onRefresh={() =>
-                run(`refresh:${item.id}`, () => refreshItem({ data: { accessToken: token, itemId: item.id } }), "Atualização solicitada ao banco.")
+                run(`refresh:${item.id}`, () => refreshItem({ data: { accessToken: token, itemId: item.id } }), "Dados atualizados.")
               }
               onReconnect={() => openConnect(item.id)}
               onRemove={() =>
