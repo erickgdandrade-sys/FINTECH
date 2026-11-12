@@ -5,7 +5,9 @@
  */
 import type { Session } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { GoalIconKey } from "@/components/icons";
 import { mapCategory } from "./categories";
+import { detectRecurrences, type Recurrence } from "./recurrences";
 import * as demo from "./data";
 import type { CategoryKey, Transaction } from "./data";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
@@ -62,8 +64,32 @@ export type Summary = {
   invoices: { total: number; dueDate: string; balanceAfter: number; cards: { name: string; color: string; amount: number }[] };
 };
 
+export type Goal = {
+  id: string;
+  name: string;
+  target: number;
+  current: number;
+  due_date: string | null;
+  icon: GoalIconKey;
+  color: string;
+  priority: boolean;
+};
+
+export type GoalInput = Omit<Goal, "id"> & { id?: string };
+
+/** Limite mensal por categoria. */
+export type Budgets = Partial<Record<CategoryKey, number>>;
+
 type FinanceCtx = {
   mode: "demo" | "live";
+  /** Pode criar/editar metas e orçamentos (precisa estar logado). */
+  canEdit: boolean;
+  goals: Goal[];
+  budgets: Budgets;
+  recurrences: Recurrence[];
+  saveGoal: (g: GoalInput) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
+  saveBudget: (category: CategoryKey, limit: number | null) => Promise<void>;
   configured: boolean;
   session: Session | null;
   ready: boolean;
@@ -83,7 +109,13 @@ const NOT_SPENDING: CategoryKey[] = ["transferencias", "investimento", "salario"
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 const brDate = (iso: string) => iso.split("-").reverse().slice(0, 2).join("/");
 
-function buildSummary(txs: Transaction[], accounts: AccountRow[], items: ItemRow[], now = new Date()): Summary {
+function buildSummary(
+  txs: Transaction[],
+  accounts: AccountRow[],
+  items: ItemRow[],
+  budgets: Budgets,
+  now = new Date(),
+): Summary {
   const y = now.getFullYear();
   const m = now.getMonth();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -100,8 +132,9 @@ function buildSummary(txs: Transaction[], accounts: AccountRow[], items: ItemRow
   const prevSpent = -prevMonth.filter(isSpend).reduce((a, t) => a + t.amount, 0);
   const prevIncome = prevMonth.filter((t) => t.amount > 0 && t.category !== "transferencias").reduce((a, t) => a + t.amount, 0);
 
-  // Sem orçamento cadastrado ainda: usa o gasto do mês anterior (arredondado) como referência.
-  const budget = Math.max(100, Math.ceil((prevSpent || spent * 1.25 || 1000) / 100) * 100);
+  // Orçamento: soma dos limites cadastrados; sem limites, usa o gasto do mês anterior como referência.
+  const budgetSum = Object.values(budgets).reduce((a, v) => a + (v ?? 0), 0);
+  const budget = budgetSum > 0 ? budgetSum : Math.max(100, Math.ceil((prevSpent || spent * 1.25 || 1000) / 100) * 100);
 
   const byDay = new Map<number, number>();
   for (const t of thisMonth.filter(isSpend)) {
@@ -128,7 +161,7 @@ function buildSummary(txs: Transaction[], accounts: AccountRow[], items: ItemRow
     .map(([key, value]) => {
       const prev = prevByCat.get(key) ?? 0;
       const trend: "up" | "down" | undefined = prev ? (value > prev * 1.1 ? "up" : value < prev * 0.9 ? "down" : undefined) : undefined;
-      return { key, value: Math.round(value * 100) / 100, trend };
+      return { key, value: Math.round(value * 100) / 100, trend, limit: budgets[key] };
     });
 
   const balance = accounts.filter((a) => a.type === "BANK").reduce((a, c) => a + Number(c.balance), 0);
@@ -188,6 +221,37 @@ const demoSummary: Summary = {
   invoices: demo.invoices,
 };
 
+/** "05/10/2026" ou "03/2027" → "2026-10-05" / "2027-03-01". */
+const toIso = (br: string) => {
+  const p = br.split("/");
+  return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : `${p[1]}-${p[0]}-01`;
+};
+
+const demoGoals: Goal[] = demo.goals.map((g, i) => ({
+  id: `demo-${i}`,
+  name: g.name,
+  target: g.target,
+  current: g.current,
+  due_date: toIso(g.due),
+  icon: g.icon,
+  color: g.color,
+  priority: g.priority,
+}));
+
+const demoRecurrences: Recurrence[] = demo.recurrences.map((r) => {
+  const [d, m] = r.date.split("/");
+  return {
+    key: r.name,
+    name: r.name,
+    category: "assinaturas" as CategoryKey,
+    amount: r.amount,
+    day: Number(d),
+    months: 6,
+    next: `2026-${m}-${d}`,
+    lastDate: `2026-10-${d}`,
+  };
+});
+
 /* ───────── Provider ───────── */
 
 const Ctx = createContext<FinanceCtx | null>(null);
@@ -198,6 +262,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
   const [rows, setRows] = useState<TxRow[]>([]);
+  const [dbGoals, setDbGoals] = useState<Goal[]>([]);
+  const [budgets, setBudgets] = useState<Budgets>({});
 
   useEffect(() => {
     const sb = getSupabase();
@@ -215,7 +281,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (!sb || !session) return;
     const since = new Date();
     since.setMonth(since.getMonth() - 3, 1);
-    const [i, a, t] = await Promise.all([
+    const [i, a, t, g, b] = await Promise.all([
       sb.from("pluggy_items").select("*").order("created_at"),
       sb.from("accounts").select("*").order("type"),
       sb
@@ -224,7 +290,17 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         .gte("date", ymd(since))
         .order("date", { ascending: false })
         .limit(5000),
+      sb.from("goals").select("*").order("priority", { ascending: false }).order("created_at"),
+      sb.from("budgets").select("category, monthly_limit"),
     ]);
+    setDbGoals(
+      ((g.data as Goal[]) ?? []).map((r) => ({ ...r, target: Number(r.target), current: Number(r.current) })),
+    );
+    setBudgets(
+      Object.fromEntries(
+        ((b.data as { category: CategoryKey; monthly_limit: number }[]) ?? []).map((r) => [r.category, Number(r.monthly_limit)]),
+      ),
+    );
     setItems((i.data as ItemRow[]) ?? []);
     setAccounts(((a.data as AccountRow[]) ?? []).map((r) => ({ ...r, balance: Number(r.balance) })));
     setRows(((t.data as TxRow[]) ?? []).map((r) => ({ ...r, amount: Number(r.amount) })));
@@ -237,14 +313,65 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       setItems([]);
       setAccounts([]);
       setRows([]);
+      setDbGoals([]);
+      setBudgets({});
     }
   }, [session, reload]);
+
+  const saveGoal = useCallback(
+    async (goal: GoalInput) => {
+      const sb = getSupabase();
+      if (!sb || !session) throw new Error("Entre na sua conta para salvar metas.");
+      const { id, ...fields } = goal;
+      const { error } = id
+        ? await sb.from("goals").update(fields).eq("id", id)
+        : await sb.from("goals").insert(fields);
+      if (error) throw new Error(error.message);
+      await reload();
+    },
+    [session, reload],
+  );
+
+  const deleteGoal = useCallback(
+    async (id: string) => {
+      const sb = getSupabase();
+      if (!sb || !session) return;
+      const { error } = await sb.from("goals").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+      await reload();
+    },
+    [session, reload],
+  );
+
+  const saveBudget = useCallback(
+    async (category: CategoryKey, limit: number | null) => {
+      const sb = getSupabase();
+      if (!sb || !session) throw new Error("Entre na sua conta para definir orçamentos.");
+      const { error } =
+        limit && limit > 0
+          ? await sb.from("budgets").upsert({ category, monthly_limit: limit }, { onConflict: "user_id,category" })
+          : await sb.from("budgets").delete().eq("category", category);
+      if (error) throw new Error(error.message);
+      await reload();
+    },
+    [session, reload],
+  );
 
   const live = Boolean(session && items.length);
 
   const value = useMemo<FinanceCtx>(() => {
+    const shared = {
+      canEdit: Boolean(session),
+      goals: session ? dbGoals : demoGoals,
+      budgets,
+      saveGoal,
+      deleteGoal,
+      saveBudget,
+    };
     if (!live) {
       return {
+        ...shared,
+        recurrences: demoRecurrences,
         mode: "demo",
         configured: isSupabaseConfigured,
         session,
@@ -267,6 +394,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       amount: r.amount,
     }));
     return {
+      ...shared,
+      recurrences: detectRecurrences(transactions),
       mode: "live",
       configured: true,
       session,
@@ -274,11 +403,11 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       items,
       accounts,
       transactions,
-      summary: buildSummary(transactions, accounts, items),
+      summary: buildSummary(transactions, accounts, items, budgets),
       reload,
       signOut: async () => void (await getSupabase()?.auth.signOut()),
     };
-  }, [live, session, ready, items, accounts, rows, reload]);
+  }, [live, session, ready, items, accounts, rows, reload, dbGoals, budgets, saveGoal, deleteGoal, saveBudget]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

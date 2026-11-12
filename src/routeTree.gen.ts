@@ -17,6 +17,7 @@ import { Route as FaturasRouteImport } from './routes/faturas'
 import { Route as FluxoDeCaixaRouteImport } from './routes/fluxo-de-caixa'
 import { Route as MetasRouteImport } from './routes/metas'
 import { Route as PatrimonioRouteImport } from './routes/patrimonio'
+import { Route as PlanejamentoRouteImport } from './routes/planejamento'
 import { Route as ProjecaoRouteImport } from './routes/projecao'
 import { Route as RecorrenciasRouteImport } from './routes/recorrencias'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
@@ -62,6 +63,11 @@ const PatrimonioRoute = PatrimonioRouteImport.update({
   path: '/patrimonio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanejamentoRoute = PlanejamentoRouteImport.update({
+  id: '/planejamento',
+  path: '/planejamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjecaoRoute = ProjecaoRouteImport.update({
   id: '/projecao',
   path: '/projecao',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/planejamento': typeof PlanejamentoRoute
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/planejamento': typeof PlanejamentoRoute
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
   '/patrimonio': typeof PatrimonioRoute
+  '/planejamento': typeof PlanejamentoRoute
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/fluxo-de-caixa'
     | '/metas'
     | '/patrimonio'
+    | '/planejamento'
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/fluxo-de-caixa'
     | '/metas'
     | '/patrimonio'
+    | '/planejamento'
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/fluxo-de-caixa'
     | '/metas'
     | '/patrimonio'
+    | '/planejamento'
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   FluxoDeCaixaRoute: typeof FluxoDeCaixaRoute
   MetasRoute: typeof MetasRoute
   PatrimonioRoute: typeof PatrimonioRoute
+  PlanejamentoRoute: typeof PlanejamentoRoute
   ProjecaoRoute: typeof ProjecaoRoute
   RecorrenciasRoute: typeof RecorrenciasRoute
   TransacoesRoute: typeof TransacoesRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatrimonioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/planejamento': {
+      id: '/planejamento'
+      path: '/planejamento'
+      fullPath: '/planejamento'
+      preLoaderRoute: typeof PlanejamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projecao': {
       id: '/projecao'
       path: '/projecao'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   FluxoDeCaixaRoute: FluxoDeCaixaRoute,
   MetasRoute: MetasRoute,
   PatrimonioRoute: PatrimonioRoute,
+  PlanejamentoRoute: PlanejamentoRoute,
   ProjecaoRoute: ProjecaoRoute,
   RecorrenciasRoute: RecorrenciasRoute,
   TransacoesRoute: TransacoesRoute,

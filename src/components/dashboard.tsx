@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Plane,
   ShieldCheck,
   TrendingDown,
   TrendingUp,
@@ -25,16 +24,14 @@ import {
 import {
   categories,
   emergency,
-  goals,
   investments,
   niviInsights,
-  recurrences,
 } from "@/lib/data";
 import { useFinance } from "@/lib/finance";
 import { money, moneyShort, splitMoney } from "@/lib/format";
 import { Money } from "./app-shell";
 import { Nivi } from "./brand";
-import { CategoryIcon } from "./icons";
+import { CategoryIcon, goalIcons } from "./icons";
 import { Card, Delta, Progress } from "./ui";
 
 const ChartFallback = ({ h }: { h: number }) => <div style={{ height: h }} className="animate-pulse rounded-xl bg-canvas" />;
@@ -378,9 +375,11 @@ export function EmergencyCard() {
 
 /* ───────────────── Próximas recorrências ───────────────── */
 export function RecurrencesCard() {
+  const { recurrences } = useFinance();
+  const list = recurrences.slice(0, 4);
   return (
     <Card
-      title={<DemoTitle>Próximas recorrências</DemoTitle>}
+      title="Próximas recorrências"
       delay={240}
       action={
         <Link to="/recorrencias" className="text-[12px] font-semibold text-violet hover:underline">
@@ -388,22 +387,22 @@ export function RecurrencesCard() {
         </Link>
       }
     >
-      <ul className="divide-y divide-line/70">
-        {recurrences.map((r) => (
-          <li key={r.name} className="flex items-center gap-3 py-2.5">
-            <ArrowUpCircle size={16} className="shrink-0 text-pink" />
-            <span
-              className="grid size-7 shrink-0 place-items-center rounded-lg text-[12px] font-bold text-white"
-              style={{ background: r.color }}
-            >
-              {r.initial}
-            </span>
-            <span className="flex-1 text-[14px] font-medium">{r.name}</span>
-            <Money className="text-[14px] font-semibold">{money(r.amount)}</Money>
-            <span className="w-11 text-right text-[12px] text-ink-3 tabular">{r.date}</span>
-          </li>
-        ))}
-      </ul>
+      {list.length === 0 ? (
+        <p className="py-6 text-center text-[13px] text-ink-3">Nenhuma assinatura ou conta fixa detectada ainda.</p>
+      ) : (
+        <ul className="divide-y divide-line/70">
+          {list.map((r) => (
+            <li key={r.key} className="flex items-center gap-3 py-2.5">
+              <CategoryIcon k={r.category} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{r.name}</span>
+              <Money className="text-[14px] font-semibold">{money(r.amount)}</Money>
+              <span className="w-11 text-right text-[12px] text-ink-3 tabular">
+                {r.next.slice(8, 10)}/{r.next.slice(5, 7)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   );
 }
@@ -451,39 +450,49 @@ export function InvoicesCard() {
 
 /* ───────────────── Metas ───────────────── */
 export function GoalsCard() {
-  const g = goals[0];
-  const pctDone = (g.current / g.target) * 100;
+  const { goals, canEdit } = useFinance();
+  const g = goals.find((x) => x.priority && x.current < x.target) ?? goals.find((x) => x.current < x.target) ?? goals[0];
+  const action = (
+    <Link to="/metas" className="text-[12px] font-semibold text-violet hover:underline">
+      {g ? "Ver todas" : "Criar meta"}
+    </Link>
+  );
+  if (!g) {
+    return (
+      <Card title="Metas" delay={320} action={action}>
+        <p className="py-6 text-center text-[13px] text-ink-3">
+          {canEdit ? "Você ainda não tem metas. Que tal criar a primeira?" : "Entre para criar suas metas."}
+        </p>
+      </Card>
+    );
+  }
+  const pctDone = Math.min(100, (g.current / g.target) * 100);
+  const Icon = goalIcons[g.icon]?.icon ?? goalIcons.sonho.icon;
+  const due = g.due_date
+    ? new Date(`${g.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+    : null;
   return (
-    <Card
-      title={<DemoTitle>Metas</DemoTitle>}
-      delay={320}
-      className="flex flex-col"
-      action={
-        <Link to="/metas" className="text-[12px] font-semibold text-violet hover:underline">
-          Ver todas
-        </Link>
-      }
-    >
+    <Card title="Metas" delay={320} className="flex flex-col" action={action}>
       <div className="relative mb-4 flex-1 overflow-hidden rounded-2xl nivo-gradient p-4 text-white">
         {/* montanhas decorativas */}
         <svg viewBox="0 0 300 120" className="absolute inset-x-0 bottom-0 w-full opacity-90" preserveAspectRatio="none" aria-hidden>
           <path d="M0 120 L60 55 L95 85 L150 30 L205 80 L245 50 L300 95 L300 120 Z" fill="#8b2bff" opacity=".55" />
           <path d="M0 120 L45 85 L110 110 L170 70 L230 105 L300 80 L300 120 Z" fill="#b8ff00" opacity=".9" />
         </svg>
-        <Plane className="absolute top-4 right-4 rotate-12 text-lime" size={26} />
+        <Icon className="absolute top-4 right-4 text-lime" size={26} />
         <div className="relative">
-          {g.priority && (
-            <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold text-ink">Prioridade</span>
-          )}
+          {g.priority && <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold text-ink">Prioridade</span>}
           <p className="mt-3 text-[18px] font-bold tracking-[-0.02em]">{g.name}</p>
-          <p className="text-[12px] text-white/75">Previsão de conclusão · {g.due}</p>
+          <p className="text-[12px] text-white/75">{due ? `Prazo · ${due}` : "Sem prazo definido"}</p>
           <div className="h-12" />
         </div>
       </div>
-      <Progress value={pctDone} color="linear-gradient(90deg,#6a00ff,#9d5cff)" />
+      <Progress value={pctDone} color={`linear-gradient(90deg,${g.color},${g.color}aa)`} />
       <div className="mt-2 flex justify-between text-[12px] text-ink-3">
         <Money>{moneyShort(g.current)}</Money>
-        <span className="font-semibold text-violet">{Math.round(pctDone)}%</span>
+        <span className="font-semibold" style={{ color: g.color }}>
+          {Math.round(pctDone)}%
+        </span>
         <Money>{moneyShort(g.target)}</Money>
       </div>
     </Card>

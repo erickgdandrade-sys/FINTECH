@@ -3,6 +3,7 @@ import clsx from "clsx";
 import {
   ArrowLeftRight,
   Bell,
+  CalendarRange,
   CalendarSync,
   ChevronDown,
   CreditCard,
@@ -44,6 +45,7 @@ const nav: { title: string; items: NavItem[] }[] = [
   {
     title: "Visão Estratégica",
     items: [
+      { to: "/planejamento", label: "Planejamento", icon: CalendarRange },
       { to: "/metas", label: "Metas", icon: Target },
       { to: "/patrimonio", label: "Patrimônio", icon: Landmark },
       { to: "/projecao", label: "Projeção", icon: TrendingUp },
@@ -125,17 +127,6 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      {/* Upsell Nivi */}
-      <div className="mx-4 mb-4 overflow-hidden rounded-2xl nivo-gradient p-4 text-white">
-        <p className="text-[13px] font-semibold">Nivo Pro</p>
-        <p className="mt-1 text-[12px] leading-snug text-white/75">
-          Insights ilimitados do Nivi e conexão com todos os bancos.
-        </p>
-        <button className="mt-3 w-full rounded-xl bg-lime py-2 text-[13px] font-bold text-ink hover:brightness-95">
-          Subir de nível
-        </button>
-      </div>
-
       <UserFooter onNavigate={onNavigate} />
     </div>
   );
@@ -171,7 +162,7 @@ function UserFooter({ onNavigate }: { onNavigate?: () => void }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14px] font-semibold">{name}</span>
-        <span className="block text-[12px] text-ink-3">{mode === "live" ? "Open Finance ativo" : "Nenhum banco conectado"}</span>
+        <span className="block text-[12px] text-ink-3">Nivo Pro · {mode === "live" ? "Open Finance ativo" : "sem banco conectado"}</span>
       </span>
       <button
         onClick={signOut}
