@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { GoalIconKey } from "@/components/icons";
 import { mapCategory } from "./categories";
-import { detectRecurrences, type Recurrence } from "./recurrences";
+import { detectRecurrences, manualToRecurrences, sameRecurrence, type ManualRecurrence, type Recurrence } from "./recurrences";
 import * as demo from "./data";
 import type { CategoryKey, Transaction } from "./data";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
@@ -106,6 +106,10 @@ type FinanceCtx = {
   saveGoal: (g: GoalInput) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   saveBudget: (category: CategoryKey, limit: number | null) => Promise<void>;
+  /** Assinaturas/parcelados cadastrados pelo usuário (incluindo os encerrados). */
+  manualRecurrences: Recurrence[];
+  saveManualRecurrence: (r: Omit<ManualRecurrence, "id"> & { id?: string }) => Promise<void>;
+  deleteManualRecurrence: (id: string) => Promise<void>;
   configured: boolean;
   session: Session | null;
   ready: boolean;
@@ -310,6 +314,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const [rows, setRows] = useState<TxRow[]>([]);
   const [dbGoals, setDbGoals] = useState<Goal[]>([]);
   const [budgets, setBudgets] = useState<Budgets>({});
+  const [manualRows, setManualRows] = useState<ManualRecurrence[]>([]);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -327,7 +332,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (!sb || !session) return;
     const since = new Date();
     since.setMonth(since.getMonth() - 3, 1);
-    const [i, a, t, g, b] = await Promise.all([
+    const [i, a, t, g, b, mr] = await Promise.all([
       sb.from("pluggy_items").select("*").order("created_at"),
       sb.from("accounts").select("*").order("type"),
       sb
@@ -338,7 +343,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         .limit(5000),
       sb.from("goals").select("*").order("priority", { ascending: false }).order("created_at"),
       sb.from("budgets").select("category, monthly_limit"),
+      sb.from("manual_recurrences").select("*").order("created_at"),
     ]);
+    setManualRows(((mr.data as ManualRecurrence[]) ?? []).map((r) => ({ ...r, amount: Number(r.amount) })));
     setDbGoals(
       ((g.data as Goal[]) ?? []).map((r) => ({ ...r, target: Number(r.target), current: Number(r.current) })),
     );
@@ -361,6 +368,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       setRows([]);
       setDbGoals([]);
       setBudgets({});
+      setManualRows([]);
     }
   }, [session, reload]);
 
@@ -405,8 +413,44 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
   const live = Boolean(session && items.length);
 
+  const saveManualRecurrence = useCallback(
+    async (r: Omit<ManualRecurrence, "id"> & { id?: string }) => {
+      const sb = getSupabase();
+      if (!sb || !session) throw new Error("Entre na sua conta para cadastrar.");
+      const { id, ...fields } = r;
+      const { error } = id
+        ? await sb.from("manual_recurrences").update(fields).eq("id", id)
+        : await sb.from("manual_recurrences").insert(fields);
+      if (error) throw new Error(error.message);
+      await reload();
+    },
+    [session, reload],
+  );
+
+  const deleteManualRecurrence = useCallback(
+    async (id: string) => {
+      const sb = getSupabase();
+      if (!sb || !session) return;
+      const { error } = await sb.from("manual_recurrences").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+      await reload();
+    },
+    [session, reload],
+  );
+
+  const manualRecurrences = useMemo(() => manualToRecurrences(manualRows), [manualRows]);
+
   const value = useMemo<FinanceCtx>(() => {
+    const activeManual = manualRecurrences.filter((r) => !r.ended);
+    /** Junta cadastros manuais com os detectados, sem repetir o mesmo gasto. */
+    const merge = (auto: Recurrence[]) =>
+      [...activeManual, ...auto.filter((a) => !manualRecurrences.some((m) => sameRecurrence(m.name, a.name)))].sort((x, y) =>
+        x.next.localeCompare(y.next),
+      );
     const shared = {
+      manualRecurrences,
+      saveManualRecurrence,
+      deleteManualRecurrence,
       canEdit: Boolean(session),
       goals: session ? dbGoals : demoGoals,
       budgets,
@@ -417,7 +461,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (!live) {
       return {
         ...shared,
-        recurrences: demoRecurrences,
+        recurrences: merge(session ? [] : demoRecurrences),
         mode: "demo",
         configured: isSupabaseConfigured,
         session,
@@ -441,7 +485,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     }));
     return {
       ...shared,
-      recurrences: detectRecurrences(transactions),
+      recurrences: merge(detectRecurrences(transactions)),
       mode: "live",
       configured: true,
       session,
@@ -453,7 +497,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       reload,
       signOut: async () => void (await getSupabase()?.auth.signOut()),
     };
-  }, [live, session, ready, items, accounts, rows, reload, dbGoals, budgets, saveGoal, deleteGoal, saveBudget]);
+  }, [live, session, ready, items, accounts, rows, reload, dbGoals, budgets, saveGoal, deleteGoal, saveBudget, manualRecurrences, saveManualRecurrence, deleteManualRecurrence]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

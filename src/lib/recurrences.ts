@@ -9,6 +9,75 @@ export type Recurrence = {
   months: number; // em quantos meses apareceu
   next: string; // próxima data prevista (YYYY-MM-DD)
   lastDate: string;
+  source?: "auto" | "manual";
+  manualId?: string;
+  kind?: "assinatura" | "parcelado";
+  endDate?: string | null;
+  installment?: { current: number; total: number } | null;
+  ended?: boolean;
+};
+
+export type ManualRecurrence = {
+  id: string;
+  kind: "assinatura" | "parcelado";
+  name: string;
+  amount: number;
+  category: CategoryKey;
+  day: number;
+  start_date: string;
+  end_date: string | null;
+  installments: number | null;
+};
+
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+/** Data no dia `day` do mês (ajusta para o último dia em meses curtos). */
+const onDay = (y: number, m: number, day: number) => new Date(y, m, Math.min(day, new Date(y, m + 1, 0).getDate()));
+const monthsBetween = (a: string, b: string) => {
+  const [ay, am] = a.split("-").map(Number);
+  const [by, bm] = b.split("-").map(Number);
+  return (by - ay) * 12 + (bm - am);
+};
+
+/** Converte cadastros manuais em recorrências com próxima cobrança, parcela atual e término. */
+export function manualToRecurrences(rows: ManualRecurrence[], today = new Date()): Recurrence[] {
+  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return rows.map((r) => {
+    let next = onDay(today.getFullYear(), today.getMonth(), r.day);
+    if (next < t0) next = onDay(today.getFullYear(), today.getMonth() + 1, r.day);
+    const start = new Date(`${r.start_date}T00:00:00`);
+    if (next < start) next = onDay(start.getFullYear(), start.getMonth(), r.day);
+    const nextIso = iso(next);
+    const endIso =
+      r.end_date ??
+      (r.kind === "parcelado" && r.installments ? iso(onDay(start.getFullYear(), start.getMonth() + r.installments - 1, r.day)) : null);
+    const ended = Boolean(endIso && nextIso.slice(0, 7) > endIso.slice(0, 7));
+    const total = r.kind === "parcelado" ? (r.installments ?? (r.end_date ? monthsBetween(r.start_date, r.end_date) + 1 : null)) : null;
+    const current = total ? Math.min(total, monthsBetween(r.start_date, nextIso) + 1) : null;
+    return {
+      key: `manual-${r.id}`,
+      name: r.name,
+      category: r.category,
+      amount: Number(r.amount),
+      day: r.day,
+      months: Math.max(1, monthsBetween(r.start_date, iso(t0)) + 1),
+      next: nextIso,
+      lastDate: r.start_date,
+      source: "manual",
+      manualId: r.id,
+      kind: r.kind,
+      endDate: endIso,
+      installment: total && current ? { current, total } : null,
+      ended,
+    };
+  });
+}
+
+/** Normalização usada para não duplicar um cadastro manual com uma recorrência detectada. */
+export const sameRecurrence = (a: string, b: string) => {
+  const n = (s: string) => normalize(s).replace(/\s/g, "");
+  const x = n(a);
+  const y = n(b);
+  return x.length > 2 && y.length > 2 && (x.includes(y) || y.includes(x));
 };
 
 /** Remove números, datas e ruídos para agrupar "NETFLIX.COM 0423" e "NETFLIX.COM 0523". */
@@ -69,6 +138,7 @@ export function detectRecurrences(transactions: Transaction[], today = new Date(
       next.setMonth(next.getMonth() + 1);
     }
     out.push({
+      source: "auto",
       key,
       name: pretty(last.description),
       category: last.category,

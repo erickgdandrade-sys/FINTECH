@@ -127,7 +127,7 @@ export function NiviActor({ scene, size = 64, loop = false }: { scene: SceneName
     >
       {def.particles && <Particles kind={def.particles} />}
       {def.bubble && (
-        <span className="nivi-bubble absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-md border-2 border-ink bg-surface px-2 py-1 text-[11px] font-bold whitespace-nowrap text-ink shadow-[2px_2px_0_var(--color-ink)]">
+        <span className="nivi-bubble absolute bottom-full left-0 mb-1 rounded-md border-2 border-ink bg-surface px-2 py-1 text-[11px] font-bold whitespace-nowrap text-ink shadow-[2px_2px_0_var(--color-ink)]">
           {def.bubble}
         </span>
       )}
