@@ -10,6 +10,7 @@ import { mapCategory } from "./categories";
 import { detectRecurrences, manualToRecurrences, sameRecurrence, type ManualRecurrence, type Recurrence } from "./recurrences";
 import * as demo from "./data";
 import type { CategoryKey, Transaction } from "./data";
+import { removePhoto, signedUrls, uploadPhoto } from "./photos";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 
 export type ItemRow = {
@@ -89,9 +90,12 @@ export type Goal = {
   icon: GoalIconKey;
   color: string;
   priority: boolean;
+  photo_path?: string | null;
+  /** Link temporário para exibir a foto (não é salvo). */
+  photo_url?: string | null;
 };
 
-export type GoalInput = Omit<Goal, "id"> & { id?: string };
+export type GoalInput = Omit<Goal, "id" | "photo_url"> & { id?: string; photo_url?: string | null };
 
 /** Limite mensal por categoria. */
 export type Budgets = Partial<Record<CategoryKey, number>>;
@@ -110,6 +114,9 @@ type FinanceCtx = {
   manualRecurrences: Recurrence[];
   saveManualRecurrence: (r: Omit<ManualRecurrence, "id"> & { id?: string }) => Promise<void>;
   deleteManualRecurrence: (id: string) => Promise<void>;
+  /** Foto de perfil (link temporário) e troca da foto. */
+  avatarUrl: string | null;
+  setAvatar: (file: File | null) => Promise<void>;
   configured: boolean;
   session: Session | null;
   ready: boolean;
@@ -315,6 +322,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const [dbGoals, setDbGoals] = useState<Goal[]>([]);
   const [budgets, setBudgets] = useState<Budgets>({});
   const [manualRows, setManualRows] = useState<ManualRecurrence[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -346,9 +354,11 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       sb.from("manual_recurrences").select("*").order("created_at"),
     ]);
     setManualRows(((mr.data as ManualRecurrence[]) ?? []).map((r) => ({ ...r, amount: Number(r.amount) })));
-    setDbGoals(
-      ((g.data as Goal[]) ?? []).map((r) => ({ ...r, target: Number(r.target), current: Number(r.current) })),
-    );
+    const goalRows = ((g.data as Goal[]) ?? []).map((r) => ({ ...r, target: Number(r.target), current: Number(r.current) }));
+    const avatarPath = session.user.user_metadata?.avatar_path as string | undefined;
+    const urls = await signedUrls([...goalRows.map((r) => r.photo_path ?? ""), avatarPath ?? ""]);
+    setDbGoals(goalRows.map((r) => ({ ...r, photo_url: r.photo_path ? (urls[r.photo_path] ?? null) : null })));
+    setAvatarUrl(avatarPath ? (urls[avatarPath] ?? null) : null);
     setBudgets(
       Object.fromEntries(
         ((b.data as { category: CategoryKey; monthly_limit: number }[]) ?? []).map((r) => [r.category, Number(r.monthly_limit)]),
@@ -369,6 +379,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       setDbGoals([]);
       setBudgets({});
       setManualRows([]);
+      setAvatarUrl(null);
     }
   }, [session, reload]);
 
@@ -376,7 +387,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     async (goal: GoalInput) => {
       const sb = getSupabase();
       if (!sb || !session) throw new Error("Entre na sua conta para salvar metas.");
-      const { id, ...fields } = goal;
+      const { id, photo_url: _url, ...fields } = goal;
+      void _url;
       const { error } = id
         ? await sb.from("goals").update(fields).eq("id", id)
         : await sb.from("goals").insert(fields);
@@ -390,11 +402,28 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       const sb = getSupabase();
       if (!sb || !session) return;
+      const photo = dbGoals.find((g) => g.id === id)?.photo_path;
       const { error } = await sb.from("goals").delete().eq("id", id);
+      if (!error) await removePhoto(photo);
       if (error) throw new Error(error.message);
       await reload();
     },
-    [session, reload],
+    [session, reload, dbGoals],
+  );
+
+  const setAvatar = useCallback(
+    async (file: File | null) => {
+      const sb = getSupabase();
+      if (!sb || !session) throw new Error("Entre na sua conta para trocar a foto.");
+      const old = session.user.user_metadata?.avatar_path as string | undefined;
+      const path = file ? await uploadPhoto(file, "perfil", 512) : null;
+      const { error } = await sb.auth.updateUser({ data: { avatar_path: path } });
+      if (error) throw new Error(error.message);
+      await removePhoto(old);
+      const urls = path ? await signedUrls([path]) : {};
+      setAvatarUrl(path ? (urls[path] ?? null) : null);
+    },
+    [session],
   );
 
   const saveBudget = useCallback(
@@ -448,6 +477,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         x.next.localeCompare(y.next),
       );
     const shared = {
+      avatarUrl,
+      setAvatar,
       manualRecurrences,
       saveManualRecurrence,
       deleteManualRecurrence,
@@ -497,7 +528,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       reload,
       signOut: async () => void (await getSupabase()?.auth.signOut()),
     };
-  }, [live, session, ready, items, accounts, rows, reload, dbGoals, budgets, saveGoal, deleteGoal, saveBudget, manualRecurrences, saveManualRecurrence, deleteManualRecurrence]);
+  }, [live, session, ready, items, accounts, rows, reload, dbGoals, budgets, saveGoal, deleteGoal, saveBudget, manualRecurrences, saveManualRecurrence, deleteManualRecurrence, avatarUrl, setAvatar]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

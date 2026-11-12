@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
-import { Pencil, Plus, Star, Trash2, X } from "lucide-react";
+import { ImagePlus, Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
 import { Nivi } from "@/components/brand";
@@ -8,6 +8,7 @@ import { GoalIcon, goalIcons, type GoalIconKey } from "@/components/icons";
 import { Progress } from "@/components/ui";
 import { useFinance, type Goal, type GoalInput } from "@/lib/finance";
 import { money, moneyShort } from "@/lib/format";
+import { removePhoto, uploadPhoto } from "@/lib/photos";
 
 export const Route = createFileRoute("/metas")({
   component: Goals,
@@ -109,7 +110,14 @@ function Goals() {
           const done = g.current >= g.target;
           const perMonth = monthlyNeeded(g);
           return (
-            <article key={g.id} className="card rise flex flex-col p-6" style={{ animationDelay: `${i * 60}ms` }}>
+            <article key={g.id} className="card rise flex flex-col overflow-hidden" style={{ animationDelay: `${i * 60}ms` }}>
+              {g.photo_url && (
+                <div className="relative h-36">
+                  <img src={g.photo_url} alt="" className="size-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
+                </div>
+              )}
+              <div className="flex flex-1 flex-col p-6">
               <div className="flex items-start justify-between gap-2">
                 <GoalIcon k={g.icon} color={g.color} />
                 <div className="flex items-center gap-1">
@@ -166,6 +174,7 @@ function Goals() {
                   + Guardar dinheiro
                 </button>
               )}
+              </div>
             </article>
           );
         })}
@@ -260,6 +269,9 @@ function GoalModal({
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(goal.photo_url ?? null);
+  const [dropPhoto, setDropPhoto] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -269,7 +281,12 @@ function GoalModal({
     setBusy(true);
     setError(null);
     try {
-      await onSave({ ...g, name: g.name.trim(), target: t, current: parseMoney(current) });
+      const oldPath = goal.photo_path ?? null;
+      let photo_path = oldPath;
+      if (photoFile) photo_path = await uploadPhoto(photoFile, "metas");
+      else if (dropPhoto) photo_path = null;
+      await onSave({ ...g, name: g.name.trim(), target: t, current: parseMoney(current), photo_path });
+      if (oldPath && oldPath !== photo_path) await removePhoto(oldPath);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível salvar.");
       setBusy(false);
@@ -309,6 +326,44 @@ function GoalModal({
             className="input"
           />
         </Field>
+
+        <div>
+          <span className="mb-1 block text-[13px] font-medium text-ink-2">Foto de capa (opcional)</span>
+          {preview ? (
+            <div className="relative h-32 overflow-hidden rounded-xl">
+              <img src={preview} alt="Prévia da capa" className="size-full object-cover" />
+              <button
+                type="button"
+                onClick={() => {
+                  setPreview(null);
+                  setPhotoFile(null);
+                  setDropPhoto(true);
+                }}
+                className="absolute top-2 right-2 grid size-8 place-items-center rounded-full bg-black/55 text-white hover:bg-black/70"
+                aria-label="Remover foto"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-line text-[13px] text-ink-3 hover:border-violet hover:text-violet">
+              <ImagePlus size={20} />
+              Escolher foto (ex.: o lugar da viagem)
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  setPhotoFile(f);
+                  setPreview(URL.createObjectURL(f));
+                  setDropPhoto(false);
+                }}
+              />
+            </label>
+          )}
+        </div>
 
         <fieldset>
           <legend className="mb-2 text-[13px] font-medium text-ink-2">Ícone</legend>

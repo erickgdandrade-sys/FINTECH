@@ -476,11 +476,18 @@ export function GoalsCard() {
   return (
     <Card title="Metas" delay={320} className="flex flex-col" action={action}>
       <div className="relative mb-4 flex-1 overflow-hidden rounded-2xl nivo-gradient p-4 text-white">
-        {/* montanhas decorativas */}
-        <svg viewBox="0 0 300 120" className="absolute inset-x-0 bottom-0 w-full opacity-90" preserveAspectRatio="none" aria-hidden>
-          <path d="M0 120 L60 55 L95 85 L150 30 L205 80 L245 50 L300 95 L300 120 Z" fill="#8b2bff" opacity=".55" />
-          <path d="M0 120 L45 85 L110 110 L170 70 L230 105 L300 80 L300 120 Z" fill="#b8ff00" opacity=".9" />
-        </svg>
+        {g.photo_url ? (
+          <>
+            <img src={g.photo_url} alt="" className="absolute inset-0 size-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+          </>
+        ) : (
+          /* montanhas decorativas */
+          <svg viewBox="0 0 300 120" className="absolute inset-x-0 bottom-0 w-full opacity-90" preserveAspectRatio="none" aria-hidden>
+            <path d="M0 120 L60 55 L95 85 L150 30 L205 80 L245 50 L300 95 L300 120 Z" fill="#8b2bff" opacity=".55" />
+            <path d="M0 120 L45 85 L110 110 L170 70 L230 105 L300 80 L300 120 Z" fill="#b8ff00" opacity=".9" />
+          </svg>
+        )}
         <Icon className="absolute top-4 right-4 text-lime" size={26} />
         <div className="relative">
           {g.priority && <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold text-ink">Prioridade</span>}

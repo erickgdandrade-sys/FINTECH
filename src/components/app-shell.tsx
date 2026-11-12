@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
 import {
   ArrowLeftRight,
+  Camera,
   CalendarRange,
   CalendarSync,
   ChevronDown,
@@ -11,6 +12,7 @@ import {
   Landmark,
   LayoutGrid,
   LineChart,
+  Loader2,
   LogIn,
   LogOut,
   Menu,
@@ -139,7 +141,9 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function UserFooter({ onNavigate }: { onNavigate?: () => void }) {
-  const { session, configured, signOut, mode } = useFinance();
+  const { session, configured, signOut, mode, avatarUrl, setAvatar } = useFinance();
+  const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   if (!session) {
     return (
       <div className="border-t border-line px-4 py-4">
@@ -163,12 +167,40 @@ function UserFooter({ onNavigate }: { onNavigate?: () => void }) {
     .join("");
   return (
     <div className="flex items-center gap-3 border-t border-line px-6 py-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-violet to-pink text-[13px] font-bold text-white">
-        {initials}
-      </span>
+      <label
+        className="group relative grid size-10 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-gradient-to-br from-violet to-pink text-[13px] font-bold text-white"
+        title="Trocar foto de perfil"
+      >
+        {avatarUrl ? <img src={avatarUrl} alt="" className="size-full object-cover" /> : initials}
+        <span className="absolute inset-0 grid place-items-center bg-ink/55 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          aria-label="Trocar foto de perfil"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+            setUploading(true);
+            setPhotoError(null);
+            try {
+              await setAvatar(file);
+            } catch (err) {
+              setPhotoError(err instanceof Error ? err.message : "Não foi possível enviar a foto.");
+            } finally {
+              setUploading(false);
+            }
+          }}
+        />
+      </label>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14px] font-semibold">{name}</span>
-        <span className="block text-[12px] text-ink-3">Nivo Pro · {mode === "live" ? "Open Finance ativo" : "sem banco conectado"}</span>
+        <span className={clsx("block truncate text-[12px]", photoError ? "text-pink" : "text-ink-3")} title={photoError ?? undefined}>
+          {photoError ?? `Nivo Pro · ${mode === "live" ? "Open Finance ativo" : "sem banco conectado"}`}
+        </span>
       </span>
       <button
         onClick={signOut}
