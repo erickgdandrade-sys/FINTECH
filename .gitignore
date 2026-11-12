@@ -8,3 +8,4 @@ dist
 dist-demo
 .netlify
 .vercel
+*.log
