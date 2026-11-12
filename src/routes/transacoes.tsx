@@ -88,7 +88,7 @@ function Transactions() {
                 onClick={() => setKind(k)}
                 className={clsx(
                   "flex-1 rounded-lg px-4 py-2 text-[13px] font-semibold capitalize transition-colors",
-                  kind === k ? "bg-white text-violet shadow-sm" : "text-ink-3 hover:text-ink",
+                  kind === k ? "bg-surface text-violet shadow-sm" : "text-ink-3 hover:text-ink",
                 )}
               >
                 {k === "saidas" ? "Saídas" : k}
@@ -129,7 +129,7 @@ function Transactions() {
           )}
           {groups.map(([date, items]) => (
             <div key={date}>
-              <p className="sticky top-16 bg-white py-2 text-[12px] font-semibold text-ink-3 first-letter:uppercase lg:top-0">
+              <p className="sticky top-16 bg-surface py-2 text-[12px] font-semibold text-ink-3 first-letter:uppercase lg:top-0">
                 {dayLabel(date)}
               </p>
               <ul className="divide-y divide-line/70">

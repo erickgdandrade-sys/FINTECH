@@ -3,6 +3,7 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-r
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 import { FinanceProvider } from "@/lib/finance";
+import { themeInitScript } from "@/components/theme-switch";
 import appCss from "@/styles.css?url";
 
 export const Route = createRootRoute({
@@ -34,8 +35,9 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <HeadContent />
       </head>
       <body>

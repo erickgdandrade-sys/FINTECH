@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useState } from "react";
-import { Nivi, NivoLogo } from "@/components/brand";
+import { NivoLogo } from "@/components/brand";
+import { LoginStage } from "@/components/nivi-stage";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export const Route = createFileRoute("/entrar")({
@@ -50,7 +51,9 @@ function SignIn() {
       <div className="nivo-gradient relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
         <NivoLogo dark />
         <div>
-          <Nivi className="mb-8 size-40" />
+          <div className="-mx-12 mb-8">
+            <LoginStage />
+          </div>
           <h1 className="max-w-md text-[44px] leading-[1.05] font-bold tracking-[-0.04em]">
             Sua vida financeira em <span className="text-lime">outro nível.</span>
           </h1>
@@ -150,7 +153,7 @@ function Field({
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-12 w-full rounded-xl border border-line bg-white px-4 text-[15px] outline-none focus:border-violet focus:ring-2 focus:ring-violet/20"
+        className="h-12 w-full rounded-xl border border-line bg-surface px-4 text-[15px] outline-none focus:border-violet focus:ring-2 focus:ring-violet/20"
         {...rest}
       />
     </label>

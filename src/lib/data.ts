@@ -40,6 +40,9 @@ export const categories: Record<
   outros: { label: "Outros", color: "#b3b0c9", soft: "#f1f0f8" },
 };
 
+// Fundo suave = cor da categoria com transparência (funciona no tema claro e escuro).
+for (const c of Object.values(categories)) c.soft = `${c.color}24`;
+
 export const month = {
   label: "Novembro 2026",
   spent: 2103.41,

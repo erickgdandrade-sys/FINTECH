@@ -240,7 +240,7 @@ function Planning() {
               onClick={() => {
                 update(() => suggestion);
               }}
-              className="flex items-center gap-1.5 rounded-xl bg-white/15 px-3 py-2 text-[12px] font-semibold hover:bg-white/25"
+              className="flex items-center gap-1.5 rounded-xl bg-surface/15 px-3 py-2 text-[12px] font-semibold hover:bg-surface/25"
             >
               <RotateCcw size={13} /> Refazer sugestão
             </button>
@@ -364,7 +364,7 @@ function PlanRow({
           value={line.amount ? line.amount.toLocaleString("pt-BR") : ""}
           onChange={(e) => onChange({ amount: parse(e.target.value) })}
           placeholder="0"
-          className="h-9 w-28 rounded-lg border border-line bg-white pr-2 pl-8 text-right text-[14px] font-semibold tabular outline-none focus:border-violet"
+          className="h-9 w-28 rounded-lg border border-line bg-surface pr-2 pl-8 text-right text-[14px] font-semibold tabular outline-none focus:border-violet"
         />
       </div>
       <button onClick={onRemove} className="grid size-8 place-items-center rounded-lg text-ink-3 hover:bg-pink-soft hover:text-pink" aria-label={`Remover ${label || "item"}`}>

@@ -34,6 +34,14 @@ import { Nivi } from "./brand";
 import { CategoryIcon, goalIcons } from "./icons";
 import { Card, Delta, Progress } from "./ui";
 
+const tooltipStyle = {
+  borderRadius: 12,
+  border: "1px solid var(--color-line)",
+  background: "var(--color-surface)",
+  color: "var(--color-ink)",
+  fontSize: 12,
+};
+
 const ChartFallback = ({ h }: { h: number }) => <div style={{ height: h }} className="animate-pulse rounded-xl bg-canvas" />;
 
 /** Marca cards que ainda usam dados de exemplo quando o usuário já conectou o banco. */
@@ -75,7 +83,7 @@ export function SpendingCard() {
   const insight = niviInsights[slide];
 
   return (
-    <section className="rise flex flex-col overflow-hidden rounded-[22px] bg-white shadow-[var(--shadow-card)] ring-2 ring-violet">
+    <section className="rise flex flex-col overflow-hidden rounded-[22px] bg-surface shadow-[var(--shadow-card)] ring-2 ring-violet">
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <h2 className="text-[14px] font-medium text-ink-2">Gastos no mês</h2>
         <p className="mt-1 flex items-baseline gap-1.5">
@@ -96,8 +104,8 @@ export function SpendingCard() {
                 </defs>
                 <XAxis dataKey="day" hide />
                 <Tooltip
-                  cursor={{ stroke: "#e9e8f5" }}
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e9e8f5", fontSize: 12 }}
+                  cursor={{ stroke: "var(--color-line)" }}
+                  contentStyle={tooltipStyle}
                   labelFormatter={(d) => `Dia ${d}`}
                   formatter={(v, n) => [money(Number(v)), n === "real" ? "Gasto" : "Orçamento"]}
                 />
@@ -131,7 +139,7 @@ export function SpendingCard() {
       {/* Resumo do mês — carrossel de insights do Nivi */}
       <div className="nivo-gradient px-5 py-3.5 text-white">
         <div className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/10">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface/10">
             <Nivi className="size-8" sparkle={false} />
           </span>
           <div className="min-w-0 flex-1">
@@ -143,7 +151,7 @@ export function SpendingCard() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setSlide((s) => (s - 1 + niviInsights.length) % niviInsights.length)}
-              className="grid size-6 place-items-center rounded-full hover:bg-white/15"
+              className="grid size-6 place-items-center rounded-full hover:bg-surface/15"
               aria-label="Insight anterior"
             >
               <ChevronLeft size={15} />
@@ -151,12 +159,12 @@ export function SpendingCard() {
             {niviInsights.map((_, i) => (
               <span
                 key={i}
-                className={clsx("h-1.5 rounded-full transition-all", i === slide ? "w-5 bg-lime" : "w-1.5 bg-white/40")}
+                className={clsx("h-1.5 rounded-full transition-all", i === slide ? "w-5 bg-lime" : "w-1.5 bg-surface/40")}
               />
             ))}
             <button
               onClick={() => setSlide((s) => (s + 1) % niviInsights.length)}
-              className="grid size-6 place-items-center rounded-full hover:bg-white/15"
+              className="grid size-6 place-items-center rounded-full hover:bg-surface/15"
               aria-label="Próximo insight"
             >
               <ChevronRight size={15} />
@@ -177,7 +185,7 @@ function Donut({ data, size = 200, stroke = 26 }: { data: { value: number; color
   let offset = 0;
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="size-full -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f1f0f8" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: "var(--color-line)" }} strokeWidth={stroke} />
       {data.map((d, i) => {
         const len = (d.value / total) * c;
         const el = (
@@ -301,7 +309,7 @@ export function InvestmentsCard() {
               </defs>
               <XAxis dataKey="m" axisLine={false} tickLine={false} interval={0} padding={{ left: 12, right: 12 }} tick={{ fontSize: 11, fill: "#8b88a6" }} />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid #e9e8f5", fontSize: 12 }}
+                contentStyle={tooltipStyle}
                 formatter={(v) => [money(Number(v)), "Patrimônio"]}
               />
               <Area type="monotone" dataKey="v" stroke="#6a00ff" strokeWidth={3} fill="url(#invFill)" />
@@ -324,7 +332,7 @@ function Gauge({ value }: { value: number }) {
   const arc = c * (240 / 360);
   return (
     <svg viewBox="0 0 100 100" className="size-full rotate-[150deg]">
-      <circle cx="50" cy="50" r={r} fill="none" stroke="#efeef7" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${arc} ${c}`} />
+      <circle cx="50" cy="50" r={r} fill="none" style={{ stroke: "var(--color-line)" }} strokeWidth="10" strokeLinecap="round" strokeDasharray={`${arc} ${c}`} />
       <circle
         cx="50"
         cy="50"
@@ -428,7 +436,7 @@ export function InvoicesCard() {
             <span
               key={c.name}
               title={`${c.name}: ${money(c.amount)}`}
-              className="grid h-5 w-7 place-items-center rounded-[5px] text-[9px] font-bold text-white ring-2 ring-white"
+              className="grid h-5 w-7 place-items-center rounded-[5px] text-[9px] font-bold text-white ring-2 ring-surface"
               style={{ background: c.color }}
             >
               {c.name[0]}
@@ -513,7 +521,7 @@ export function NiviGreeting() {
   const pace = month.pace;
   const top = month.distribution[0];
   return (
-    <div className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-white to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
+    <div className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-surface to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
       <span className="nivo-gradient grid size-14 shrink-0 place-items-center rounded-2xl">
         <Nivi className="size-12" />
       </span>

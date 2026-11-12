@@ -111,7 +111,7 @@ export function NiviFab() {
     <>
       <div
         className={clsx(
-          "fixed right-4 bottom-24 z-40 flex w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6",
+          "fixed right-4 bottom-24 z-40 flex w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6",
           open ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
         )}
         role="dialog"
@@ -130,7 +130,7 @@ export function NiviFab() {
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="grid size-8 place-items-center rounded-full bg-white/15 hover:bg-white/25"
+            className="grid size-8 place-items-center rounded-full bg-surface/15 hover:bg-surface/25"
             aria-label="Fechar chat"
           >
             <X size={16} />
@@ -146,7 +146,7 @@ export function NiviFab() {
                 m.from === "nivi"
                   ? m.error
                     ? "rounded-tl-md bg-pink-soft text-pink"
-                    : "rounded-tl-md bg-white text-ink shadow-sm"
+                    : "rounded-tl-md bg-surface text-ink shadow-sm"
                   : "ml-auto rounded-tr-md bg-violet text-white",
               )}
             >
@@ -154,7 +154,7 @@ export function NiviFab() {
             </div>
           ))}
           {typing && (
-            <div className="flex w-14 gap-1 rounded-2xl rounded-tl-md bg-white px-3.5 py-3 shadow-sm">
+            <div className="flex w-14 gap-1 rounded-2xl rounded-tl-md bg-surface px-3.5 py-3 shadow-sm">
               {[0, 1, 2].map((d) => (
                 <span
                   key={d}
@@ -207,7 +207,7 @@ export function NiviFab() {
         aria-expanded={open}
         aria-label="Falar com o Nivi"
       >
-        <span className="grid size-11 place-items-center rounded-full bg-white/10">
+        <span className="grid size-11 place-items-center rounded-full bg-surface/10">
           <Nivi className="size-9" sparkle={false} />
         </span>
         <span className="text-[14px] font-bold">Nivi</span>

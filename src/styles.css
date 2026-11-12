@@ -21,6 +21,8 @@
   --color-cyan-soft: #ddfbff;
   --color-cyan-ink: #0090a3;
   --color-canvas: #f6f6fe;
+  --color-surface: #ffffff;
+  --color-on-accent: #0b0630;
   --color-ink: #0b0630;
   --color-ink-2: #4a4668;
   --color-ink-3: #8b88a6;
@@ -34,6 +36,33 @@
   --radius-card: 22px;
   --shadow-card: 0 1px 2px rgb(11 6 48 / 0.04), 0 8px 24px -12px rgb(11 6 48 / 0.08);
   --shadow-pop: 0 18px 40px -16px rgb(106 0 255 / 0.45);
+}
+
+/* ───────────── Modo escuro ───────────── */
+:root.dark {
+  color-scheme: dark;
+  --color-canvas: #0c0820;
+  --color-surface: #161031;
+  --color-ink: #f2f0fb;
+  --color-ink-2: #c3bfdb;
+  --color-ink-3: #8c87ad;
+  --color-line: #2b2450;
+  --color-violet: #9d5cff;
+  --color-violet-soft: #2a1a5e;
+  --color-pink-soft: #3b1230;
+  --color-orange-soft: #3a2210;
+  --color-cyan-soft: #0e2f37;
+  --color-lime-soft: #25330b;
+  --color-positive-soft: #0e2e21;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+}
+/* Texto sobre o verde-limão e sobre o "ink" invertido continua escuro/legível. */
+:root.dark .bg-lime,
+:root.dark .bg-lime.text-ink {
+  color: var(--color-on-accent);
+}
+:root.dark .bg-ink.text-white {
+  color: var(--color-canvas);
 }
 
 @layer base {
@@ -55,10 +84,10 @@
 }
 
 @utility card {
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  border: 1px solid rgb(233 232 245 / 0.7);
+  border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
 }
 
 @utility input {
@@ -66,7 +95,8 @@
   width: 100%;
   border-radius: 0.75rem;
   border: 1px solid var(--color-line);
-  background: white;
+  background: var(--color-surface);
+  color: var(--color-ink);
   padding: 0 0.875rem;
   font-size: 15px;
   outline: none;

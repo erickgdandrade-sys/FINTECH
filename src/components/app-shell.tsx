@@ -28,6 +28,7 @@ import { useFinance } from "@/lib/finance";
 import { NivoAppIcon, NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
 import { NiviStage } from "./nivi-stage";
+import { ThemeSwitch } from "./theme-switch";
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
 
@@ -128,6 +129,10 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
+      <div className="flex items-center justify-between px-6 pb-3">
+        <span className="text-[12px] font-medium text-ink-3">Tema</span>
+        <ThemeSwitch />
+      </div>
       <UserFooter onNavigate={onNavigate} />
     </div>
   );
@@ -191,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <PrivacyCtx.Provider value={{ hidden, toggle: () => setHidden((h) => !h) }}>
       <div className="min-h-dvh">
         {/* Sidebar desktop */}
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] border-r border-line bg-white lg:block">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] border-r border-line bg-surface lg:block">
           <Sidebar />
         </aside>
 
@@ -212,7 +217,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           />
           <aside
             className={clsx(
-              "absolute inset-y-0 left-0 w-[280px] bg-white shadow-2xl transition-transform duration-300",
+              "absolute inset-y-0 left-0 w-[280px] bg-surface shadow-2xl transition-transform duration-300",
               drawer ? "translate-x-0" : "-translate-x-full",
             )}
           >
@@ -228,7 +233,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* Topbar mobile */}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-white/85 px-4 py-3 backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-surface/85 px-4 py-3 backdrop-blur lg:hidden">
           <button
             onClick={() => setDrawer(true)}
             className="grid size-10 place-items-center rounded-xl bg-canvas"
@@ -280,7 +285,7 @@ export function PageHeader({
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="h-10 appearance-none rounded-xl border border-line bg-white pr-9 pl-4 text-[14px] font-medium text-ink-2 hover:border-ink-3/40"
+            className="h-10 appearance-none rounded-xl border border-line bg-surface pr-9 pl-4 text-[14px] font-medium text-ink-2 hover:border-ink-3/40"
           >
             <option>Semanal</option>
             <option>Mensal</option>
@@ -289,11 +294,11 @@ export function PageHeader({
           <ChevronDown size={15} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-ink-3" />
         </label>
         <button
-          className="relative hidden size-10 place-items-center rounded-xl border border-line bg-white text-ink-2 hover:text-ink lg:grid"
+          className="relative hidden size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 hover:text-ink lg:grid"
           aria-label="Notificações"
         >
           <Bell size={18} />
-          <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-pink ring-2 ring-white" />
+          <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-pink ring-2 ring-surface" />
         </button>
         <button className="flex h-10 items-center gap-1.5 rounded-xl bg-lime px-3.5 text-[14px] font-bold text-ink shadow-[0_6px_16px_-8px_rgb(140_200_0)] hover:brightness-95">
           <Plus size={18} strokeWidth={2.6} />

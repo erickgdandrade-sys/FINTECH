@@ -85,7 +85,7 @@ function Goals() {
               de <Money>{moneyShort(target)}</Money>
             </span>
           </p>
-          <Progress value={(saved / target) * 100} color="#b8ff00" className="mt-4 max-w-lg bg-white/15" />
+          <Progress value={(saved / target) * 100} color="#b8ff00" className="mt-4 max-w-lg bg-surface/15" />
           {focus && (
             <p className="mt-3 max-w-lg text-[13px] text-white/80">
               <b className="text-lime">Dica do Nivi:</b> foque em <b>{focus.name}</b>. Faltam{" "}
@@ -227,7 +227,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={title}>
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="rise relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
+      <div className="rise relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-[19px] font-bold tracking-[-0.02em]">{title}</h2>
           <button onClick={onClose} className="grid size-8 place-items-center rounded-full bg-canvas" aria-label="Fechar">
@@ -421,7 +421,7 @@ function DepositModal({ goal, onClose, onSave }: { goal: Goal; onClose: () => vo
               type="button"
               key={String(w)}
               onClick={() => setWithdraw(w)}
-              className={clsx("flex-1 rounded-lg py-2 text-[13px] font-semibold", withdraw === w ? "bg-white text-violet shadow-sm" : "text-ink-3")}
+              className={clsx("flex-1 rounded-lg py-2 text-[13px] font-semibold", withdraw === w ? "bg-surface text-violet shadow-sm" : "text-ink-3")}
             >
               {w ? "Retirar" : "Guardar"}
             </button>
