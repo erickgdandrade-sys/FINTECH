@@ -13,17 +13,11 @@ import {
 import { createRoot } from "react-dom/client";
 import { AppShell } from "@/components/app-shell";
 import { FinanceProvider } from "@/lib/finance";
-import { Route as Index } from "@/routes/index";
-import { Route as Transacoes } from "@/routes/transacoes";
-import { Route as Metas } from "@/routes/metas";
-import { Route as Recorrencias } from "@/routes/recorrencias";
-import { Route as Fluxo } from "@/routes/fluxo-de-caixa";
-import { Route as Faturas } from "@/routes/faturas";
-import { Route as Categorias } from "@/routes/categorias";
-import { Route as Patrimonio } from "@/routes/patrimonio";
-import { Route as Projecao } from "@/routes/projecao";
-import { Route as Contas } from "@/routes/contas";
+import { themeInitScript } from "@/components/theme-switch";
 import "@/styles.css";
+
+// Aplica o tema salvo (ou o do sistema) antes de desenhar, como o site completo faz no <head>.
+new Function(themeInitScript)();
 
 const root = createRootRoute({
   component: () => (
@@ -35,18 +29,17 @@ const root = createRootRoute({
   ),
 });
 
-const pages = {
-  "/": Index,
-  "/transacoes": Transacoes,
-  "/metas": Metas,
-  "/recorrencias": Recorrencias,
-  "/fluxo-de-caixa": Fluxo,
-  "/faturas": Faturas,
-  "/categorias": Categorias,
-  "/patrimonio": Patrimonio,
-  "/projecao": Projecao,
-  "/contas": Contas,
-};
+// Todas as páginas de src/routes entram automaticamente (exceto a raiz e as rotas de API).
+const modules = import.meta.glob("../src/routes/*.tsx", { eager: true }) as Record<string, { Route?: { options: { component?: unknown } } }>;
+const pages = Object.fromEntries(
+  Object.entries(modules)
+    .filter(([file]) => !file.endsWith("__root.tsx"))
+    .map(([file, mod]) => {
+      const name = file.split("/").pop()!.replace(/\.tsx$/, "");
+      return [name === "index" ? "/" : `/${name}`, mod.Route] as const;
+    })
+    .filter(([, r]) => r?.options.component),
+);
 
 const routeTree = root.addChildren(
   Object.entries(pages).map(([path, r]) =>

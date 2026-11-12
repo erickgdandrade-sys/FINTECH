@@ -40,6 +40,14 @@
   --shadow-pop: 0 18px 40px -16px rgb(106 0 255 / 0.45);
 }
 
+/* Fundo e cor do texto fora de @layer: vencem estilos padrão de páginas que embutem o app
+   (ex.: o link de demonstração), garantindo o tema escuro em toda a tela. */
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
 /* ───────────── Modo escuro ───────────── */
 :root.dark {
   color-scheme: dark;
