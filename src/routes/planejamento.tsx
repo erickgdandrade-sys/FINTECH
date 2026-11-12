@@ -24,9 +24,38 @@ const sections: { kind: PlanKind; title: string; hint: string }[] = [
 
 const parse = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
+/** Campo de dinheiro que aceita centavos enquanto digita (o texto só é formatado ao sair do campo). */
+function MoneyInput({
+  value,
+  onValue,
+  className,
+  ...rest
+}: { value: number; onValue: (v: number) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
+  const fmt = (v: number) => (v ? v.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : "");
+  const [text, setText] = useState<string | null>(null);
+  return (
+    <input
+      {...rest}
+      inputMode="decimal"
+      value={text ?? fmt(value)}
+      onFocus={() => setText(fmt(value))}
+      onBlur={() => setText(null)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^\d.,]/g, "");
+        setText(raw);
+        onValue(parse(raw));
+      }}
+      className={className}
+    />
+  );
+}
+
 function Planning() {
-  const { transactions, recurrences, budgets, goals, canEdit, session, saveBudget, mode, summary } = useFinance();
+  const { transactions: allTx, recurrences, budgets, goals, canEdit, session, saveBudget, mode, summary, ready } = useFinance();
   const month = nextMonthIso();
+  const userId = session?.user.id ?? null;
+  // Logado sem banco conectado: não usar as transações de exemplo na sugestão.
+  const transactions = useMemo(() => (session && mode === "demo" ? [] : allTx), [session, mode, allTx]);
   const suggestion = useMemo(() => {
     if (mode === "demo" && !session) {
       // Exemplo: dados de demonstração só têm o mês atual, então montamos um plano ilustrativo.
@@ -46,17 +75,25 @@ function Planning() {
     }
     return suggestPlan(transactions, recurrences, budgets, goals);
   }, [transactions, recurrences, budgets, goals, mode, session, summary.distribution]);
+
   const [plan, setPlan] = useState<Plan | null>(null);
+  /** "saved" = veio do banco; "suggestion" = sugestão ainda não salva. */
+  const [source, setSource] = useState<"saved" | "suggestion">("suggestion");
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
-  // Carrega o plano salvo; se não houver, usa a sugestão.
+  // 1) Busca o plano salvo UMA vez por usuário/mês (recarregar dados não apaga suas edições).
   useEffect(() => {
+    const key = `${userId ?? "anon"}:${month}`;
+    if (loadedFor === key) return;
     const sb = getSupabase();
-    if (!sb || !session) {
-      setPlan(suggestion);
+    if (!sb || !userId) {
+      setLoadedFor(key);
+      setSource("suggestion");
+      setPlan(null);
       return;
     }
     let cancel = false;
@@ -64,18 +101,30 @@ function Planning() {
       .select("income, lines, updated_at")
       .eq("month", month)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancel) return;
+        if (error) setNotice({ kind: "error", text: `Não foi possível carregar o plano salvo: ${error.message}` });
         if (data) {
-          setPlan({ month, income: Number(data.income), lines: data.lines as PlanLine[] });
+          setPlan({ month, income: Number(data.income), lines: (data.lines as PlanLine[]) ?? [] });
           setSavedAt(data.updated_at as string);
-        } else setPlan(suggestion);
+          setSource("saved");
+        } else {
+          setPlan(null);
+          setSource("suggestion");
+        }
+        setDirty(false);
+        setLoadedFor(key);
       });
     return () => {
       cancel = true;
     };
-    // A sugestão muda quando os dados carregam; só a usamos se não houver plano salvo.
-  }, [session, month, suggestion]);
+  }, [userId, month, loadedFor]);
+
+  // 2) Sem plano salvo e sem edições: acompanha a sugestão (ela muda quando os dados terminam de carregar).
+  useEffect(() => {
+    if (!loadedFor || source === "saved" || dirty) return;
+    setPlan(suggestion);
+  }, [loadedFor, source, dirty, suggestion]);
 
   const update = useCallback((fn: (p: Plan) => Plan) => {
     setPlan((p) => (p ? fn(p) : p));
@@ -83,7 +132,14 @@ function Planning() {
     setNotice(null);
   }, []);
 
-  if (!plan) return <PageHeader title="Planejamento" />;
+  if (!plan || !loadedFor || (session && !ready)) {
+    return (
+      <>
+        <PageHeader title="Planejamento" subtitle={`Próximo mês · ${monthLabel(month)}`} />
+        <div className="card animate-pulse p-6 text-[14px] text-ink-3">Montando seu planejamento…</div>
+      </>
+    );
+  }
 
   const t = totals(plan);
   const usage = plan.income ? Math.min(100, (t.planned / plan.income) * 100) : 0;
@@ -99,8 +155,9 @@ function Planning() {
       .select("updated_at")
       .single();
     setBusy(false);
-    if (error) return setNotice({ kind: "error", text: error.message });
+    if (error) return setNotice({ kind: "error", text: `Não foi possível salvar: ${error.message}` });
     setSavedAt(data.updated_at as string);
+    setSource("saved");
     setDirty(false);
     setNotice({ kind: "ok", text: "Planejamento salvo." });
   }
@@ -132,10 +189,10 @@ function Planning() {
           canEdit && (
             <button
               onClick={save}
-              disabled={busy || !dirty}
+              disabled={busy || (source === "saved" && !dirty)}
               className="flex h-10 items-center gap-1.5 rounded-xl bg-violet px-3.5 text-[14px] font-bold text-white hover:brightness-110 disabled:opacity-50"
             >
-              <Check size={17} /> {dirty ? "Salvar plano" : "Salvo"}
+              <Check size={17} /> {busy ? "Salvando…" : source === "saved" && !dirty ? "Salvo" : dirty && source === "saved" ? "Salvar alterações" : "Salvar plano"}
             </button>
           )
         }
@@ -166,11 +223,10 @@ function Planning() {
               </label>
               <div className="relative mt-1">
                 <span className="absolute top-1/2 left-3 -translate-y-1/2 text-[14px] text-ink-3">R$</span>
-                <input
+                <MoneyInput
                   id="plan-income"
-                  inputMode="decimal"
-                  value={plan.income ? plan.income.toLocaleString("pt-BR") : ""}
-                  onChange={(e) => update((p) => ({ ...p, income: parse(e.target.value) }))}
+                  value={plan.income}
+                  onValue={(v) => update((p) => ({ ...p, income: v }))}
                   className="input pl-9 text-[18px] font-bold"
                 />
               </div>
@@ -237,9 +293,7 @@ function Planning() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
-              onClick={() => {
-                update(() => suggestion);
-              }}
+              onClick={() => update(() => suggestion)}
               className="flex items-center gap-1.5 rounded-xl bg-surface/15 px-3 py-2 text-[12px] font-semibold hover:bg-surface/25"
             >
               <RotateCcw size={13} /> Refazer sugestão
@@ -257,7 +311,10 @@ function Planning() {
         </div>
       </div>
 
-      {savedAt && !dirty && (
+      {source === "suggestion" && !dirty && canEdit && (
+        <p className="mb-3 text-[12px] text-ink-3">Esta é uma sugestão do Nivi a partir do seu histórico. Ajuste o que quiser e toque em Salvar plano.</p>
+      )}
+      {savedAt && source === "saved" && !dirty && (
         <p className="mb-3 text-[12px] text-ink-3">
           Salvo em {new Date(savedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
         </p>
@@ -358,11 +415,10 @@ function PlanRow({
       )}
       <div className="relative">
         <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[12px] text-ink-3">R$</span>
-        <input
+        <MoneyInput
           aria-label={`Valor de ${label || "item"}`}
-          inputMode="decimal"
-          value={line.amount ? line.amount.toLocaleString("pt-BR") : ""}
-          onChange={(e) => onChange({ amount: parse(e.target.value) })}
+          value={line.amount}
+          onValue={(v) => onChange({ amount: v })}
           placeholder="0"
           className="h-9 w-28 rounded-lg border border-line bg-surface pr-2 pl-8 text-right text-[14px] font-semibold tabular outline-none focus:border-violet"
         />
