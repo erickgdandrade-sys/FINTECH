@@ -30,7 +30,18 @@ Nenhuma chave vai para o código: tudo fica no arquivo `.env` (que não é envia
    As credenciais de teste aparecem na própria tela do widget/documentação da Pluggy.
 5. Para conectar bancos reais, a Pluggy pede a ativação do plano/produção no dashboard.
 
-## 3. Rodar
+## 3. Publicar na Vercel (sem instalar nada no PC)
+
+1. Em https://vercel.com: **Add New… → Project → Import** o repositório FINTECH.
+2. Em **Settings → Environment Variables**, cadastre as variáveis do `.env.example`.
+   Tudo que começa com `VITE_` é **Config** (vai para o navegador de propósito); o resto é **Secret**.
+3. Em **Settings → Environments → Production**, defina o branch de produção.
+4. **Deployments → Redeploy** para aplicar as variáveis.
+5. No Supabase, em **Authentication → URL Configuration**, coloque o endereço `.vercel.app` em **Site URL**.
+
+O endereço do webhook da Pluggy é descoberto automaticamente na Vercel e na Netlify.
+
+## 3b. Rodar no computador (opcional)
 
 ```sh
 cp .env.example .env   # e preencha
