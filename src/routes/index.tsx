@@ -13,6 +13,7 @@ import {
   useFirstName,
 } from "@/components/dashboard";
 import { MobileHome } from "@/components/mobile-home";
+import { NiviPerch } from "@/components/nivi-perch";
 import { useFinance } from "@/lib/finance";
 
 export const Route = createFileRoute("/")({
@@ -34,6 +35,7 @@ function Overview() {
         </div>
 
         <div className="hidden lg:col-span-3 lg:block">
+          <NiviPerch balance={summary.balance} />
           <NiviGreeting />
         </div>
 

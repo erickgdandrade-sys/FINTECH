@@ -1,11 +1,11 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { BarChart3, CalendarDays, CreditCard, Eye, EyeOff, Target, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
+import { BarChart3, CalendarDays, CreditCard, Eye, EyeOff, Sparkles, Target, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { useFinance } from "@/lib/finance";
 import { money } from "@/lib/format";
 import { Money, usePrivacy } from "./app-shell";
-import { NiviVector } from "./nivi-vector";
+import { NiviPerch } from "./nivi-perch";
 
 /** Abre o chat do Nivi (o botão flutuante escuta este evento). */
 export const openNivi = () => window.dispatchEvent(new Event("nivi:open"));
@@ -47,15 +47,19 @@ export function MobileHome() {
     <div className="mb-5 space-y-4 lg:hidden">
       <button
         onClick={openNivi}
-        className="rise relative flex w-full items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-violet-soft to-surface p-4 pr-28 text-left ring-1 ring-line"
+        className="rise relative flex w-full items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-violet-soft to-surface p-4 pr-24 text-left ring-1 ring-line"
       >
         <span>
           <span className="block text-[17px] font-bold tracking-[-0.02em]">Oi! Eu sou o Nivi 👋</span>
           <span className="mt-1 block text-[13px] leading-snug text-ink-2">Analisei suas finanças e separei alguns insights para você.</span>
         </span>
-        <NiviVector pose="wave" sparkle className="absolute right-2 -bottom-1 w-24" />
+        <span className="nivo-gradient absolute top-1/2 right-4 grid size-14 -translate-y-1/2 place-items-center rounded-2xl text-lime shadow-[var(--shadow-pop)]">
+          <Sparkles size={26} />
+        </span>
       </button>
 
+      <div>
+      <NiviPerch balance={summary.balance} />
       <div className="card rise overflow-hidden p-5">
         <div className="flex items-center justify-between">
           <span className="text-[14px] font-medium text-ink-2">Saldo atual</span>
@@ -88,6 +92,7 @@ export function MobileHome() {
             </ClientOnly>
           </div>
         </div>
+      </div>
       </div>
 
       <nav className="rise grid grid-cols-4 gap-2.5" aria-label="Atalhos">

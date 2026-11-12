@@ -190,7 +190,8 @@ export function NiviStage() {
   const rich = summary.balance >= RICH;
 
   useEffect(() => {
-    if (reduced || pathname === "/entrar") return;
+    // Na visão geral o Nivi mora em cima do saldo (NiviPerch); o palco do rodapé fica para as outras páginas.
+    if (reduced || pathname === "/entrar" || pathname === "/") return;
     let timers: ReturnType<typeof setTimeout>[] = [];
     const play = (scene: SceneName, after = 0) => {
       timers.push(

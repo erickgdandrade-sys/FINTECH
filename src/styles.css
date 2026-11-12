@@ -262,3 +262,62 @@
 @media (prefers-reduced-motion: reduce) {
   .nv *, .nv-sparks { animation: none !important; }
 }
+
+/* Poses extras do Nivi (rotina em cima do saldo) */
+.nv-walk .nv-bodywrap { animation: nv-bob 0.42s ease-in-out infinite alternate; }
+.nv-walk .nv-leg-l { animation: nv-step 0.42s ease-in-out infinite alternate; }
+.nv-walk .nv-leg-r { animation: nv-step 0.42s ease-in-out infinite alternate-reverse; }
+.nv-walk .nv-arm-l { animation: nv-swing-l 0.42s ease-in-out infinite alternate; }
+.nv-walk .nv-arm-r { animation: nv-swing-r 0.42s ease-in-out infinite alternate; }
+
+/* Sentado na borda do card: corpo desce e as pernas ficam penduradas */
+.nv-sit .nv-bodywrap, .nv-sleep .nv-bodywrap { transform: translateY(15px); transition: transform 0.35s ease; }
+.nv-sit .nv-leg-l { animation: nv-dangle 1.1s ease-in-out infinite alternate; }
+.nv-sit .nv-leg-r { animation: nv-dangle 1.1s ease-in-out infinite alternate-reverse; }
+@keyframes nv-dangle { from { transform: rotate(-10deg); } to { transform: rotate(12deg); } }
+.nv-sit .nv-shadow, .nv-sleep .nv-shadow { opacity: 0; }
+
+.nv-sleep .nv-eyes { animation: none; transform: scaleY(0.12); }
+.nv-sleep .nv-antennas { animation: nv-droop 2.6s ease-in-out infinite; }
+@keyframes nv-droop { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+
+.nv-kick .nv-leg-r { animation: nv-kick 1.4s ease-in-out infinite; }
+@keyframes nv-kick { 0%, 60%, 100% { transform: rotate(0); } 8% { transform: rotate(18deg); } 16% { transform: rotate(-55deg); } 30% { transform: rotate(0); } }
+.nv-kick .nv-arm-l { animation: nv-kick-arm 1.4s ease-in-out infinite; }
+@keyframes nv-kick-arm { 0%, 60%, 100% { transform: rotate(0); } 16% { transform: rotate(40deg); } }
+
+.nv-juggle .nv-bodywrap { animation: nv-bob 0.35s ease-in-out infinite alternate; }
+.nv-juggle .nv-leg-r { animation: nv-juggle-leg 0.7s ease-in-out infinite; }
+@keyframes nv-juggle-leg { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-35deg); } }
+
+.nv-dance .nv-bodywrap { transform-origin: 50% 100%; animation: nv-sway 0.45s ease-in-out infinite alternate; }
+@keyframes nv-sway { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+.nv-dance .nv-arm-l { animation: nv-cheer-l 0.45s ease-in-out infinite alternate; }
+.nv-dance .nv-arm-r { animation: nv-cheer-r 0.45s ease-in-out infinite alternate-reverse; }
+
+.nv-look .nv-eyes { animation: nv-look 1.6s ease-in-out infinite; }
+@keyframes nv-look { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.nv-look .nv-antennas { animation: nv-wiggle 1.6s ease-in-out infinite; }
+
+/* Acessórios da rotina */
+.perch-ball-kick { animation: ball-kick 1.4s ease-in-out infinite; }
+@keyframes ball-kick {
+  0%, 12% { transform: translateX(0) rotate(0); }
+  45% { transform: translateX(110px) translateY(-30px) rotate(400deg); }
+  70% { transform: translateX(150px) rotate(560deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+.perch-ball-juggle { animation: ball-juggle 0.7s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate; }
+@keyframes ball-juggle { from { transform: translateY(0) rotate(0); } to { transform: translateY(-46px) rotate(180deg); } }
+.perch-float { animation: perch-float 2.2s ease-out infinite; }
+@keyframes perch-float {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(14px, -34px) scale(1.1); }
+}
+.perch-hop { animation: perch-hop 0.55s ease-out 3; }
+@keyframes perch-hop { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-30px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .perch-ball-kick, .perch-ball-juggle, .perch-float, .perch-hop { animation: none !important; }
+}

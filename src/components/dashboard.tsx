@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Sparkles,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -523,8 +524,8 @@ export function NiviGreeting() {
   const top = month.distribution[0];
   return (
     <div className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-surface to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
-      <span className="nivo-gradient grid size-14 shrink-0 place-items-center rounded-2xl">
-        <Nivi className="size-12" />
+      <span className="nivo-gradient grid size-14 shrink-0 place-items-center rounded-2xl text-lime">
+        <Sparkles size={26} />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[16px] font-bold tracking-[-0.02em]">Resumo do Nivi</p>

@@ -1,12 +1,12 @@
 /**
  * Nivi vetorial (fiel à identidade visual), com partes animáveis:
  * antenas, corpo, visor, olhos, braços e pernas.
- * Poses: idle (pisca), wave (acena), run (corre), cheer (comemora), think (pensa).
+ * Poses: idle, wave, run, walk, cheer, think, sit, sleep, kick, dance, look, juggle.
  */
 import clsx from "clsx";
 import { useId } from "react";
 
-export type NiviPose = "idle" | "wave" | "run" | "cheer" | "think";
+export type NiviPose = "idle" | "wave" | "run" | "walk" | "cheer" | "think" | "sit" | "sleep" | "kick" | "dance" | "look" | "juggle";
 
 const INK = "#1d0b5e";
 const LIME = "#b8ff00";
