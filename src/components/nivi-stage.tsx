@@ -101,7 +101,7 @@ const PAGE_SCENE: Record<string, SceneName> = {
 };
 
 /** Saldo a partir do qual o Nivi aparece jogando dinheiro. */
-const RICH = 10_000;
+const RICH = 1_000;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
