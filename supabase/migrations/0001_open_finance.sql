@@ -61,10 +61,10 @@ alter table public.accounts     enable row level security;
 alter table public.transactions enable row level security;
 
 drop policy if exists "items: dono lê" on public.pluggy_items;
-create policy "items: dono lê" on public.pluggy_items for select using (auth.uid() = user_id);
+create policy "items: dono lê" on public.pluggy_items for select using ((select auth.uid()) = user_id);
 
 drop policy if exists "accounts: dono lê" on public.accounts;
-create policy "accounts: dono lê" on public.accounts for select using (auth.uid() = user_id);
+create policy "accounts: dono lê" on public.accounts for select using ((select auth.uid()) = user_id);
 
 drop policy if exists "transactions: dono lê" on public.transactions;
-create policy "transactions: dono lê" on public.transactions for select using (auth.uid() = user_id);
+create policy "transactions: dono lê" on public.transactions for select using ((select auth.uid()) = user_id);
