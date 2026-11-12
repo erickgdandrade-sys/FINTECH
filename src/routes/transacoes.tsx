@@ -3,7 +3,8 @@ import clsx from "clsx";
 import { ArrowDownCircle, ArrowUpCircle, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
-import { categories, transactions, type CategoryKey } from "@/lib/data";
+import { categories, type CategoryKey } from "@/lib/data";
+import { useFinance } from "@/lib/finance";
 import { money } from "@/lib/format";
 
 export const Route = createFileRoute("/transacoes")({
@@ -16,6 +17,7 @@ const dayLabel = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
 
 function Transactions() {
+  const { transactions, summary, mode } = useFinance();
   const [q, setQ] = useState("");
   const [kind, setKind] = useState<Kind>("todas");
   const [cat, setCat] = useState<CategoryKey | null>(null);
@@ -28,7 +30,7 @@ function Transactions() {
           (!cat || t.category === cat) &&
           t.description.toLowerCase().includes(q.toLowerCase()),
       ),
-    [q, kind, cat],
+    [transactions, q, kind, cat],
   );
 
   const income = filtered.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0);
@@ -44,7 +46,7 @@ function Transactions() {
 
   return (
     <>
-      <PageHeader title="Transações" subtitle="Novembro 2026" />
+      <PageHeader title="Transações" subtitle={mode === "live" ? "Últimos 3 meses" : summary.monthLabel} />
 
       <div className="mb-5 grid gap-4 sm:grid-cols-3">
         {[

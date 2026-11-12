@@ -2,6 +2,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
+import { FinanceProvider } from "@/lib/finance";
 import appCss from "@/styles.css?url";
 
 export const Route = createRootRoute({
@@ -23,9 +24,11 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootDocument,
   component: () => (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <FinanceProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </FinanceProvider>
   ),
 });
 

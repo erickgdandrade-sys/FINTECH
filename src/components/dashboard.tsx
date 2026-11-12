@@ -11,7 +11,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Area,
   AreaChart,
@@ -24,23 +24,34 @@ import {
 } from "recharts";
 import {
   categories,
-  distribution,
   emergency,
   goals,
   investments,
-  invoices,
-  month,
   niviInsights,
-  pace,
   recurrences,
-  spendingCurve,
 } from "@/lib/data";
+import { useFinance } from "@/lib/finance";
 import { money, moneyShort, splitMoney } from "@/lib/format";
 import { Money } from "./app-shell";
 import { Nivi } from "./brand";
 import { Card, Delta, Progress } from "./ui";
 
 const ChartFallback = ({ h }: { h: number }) => <div style={{ height: h }} className="animate-pulse rounded-xl bg-canvas" />;
+
+/** Marca cards que ainda usam dados de exemplo quando o usuário já conectou o banco. */
+function DemoTitle({ children }: { children: ReactNode }) {
+  const { mode } = useFinance();
+  return (
+    <span className="flex items-center gap-2">
+      {children}
+      {mode === "live" && (
+        <span className="rounded-full bg-canvas px-2 py-0.5 text-[10px] font-semibold tracking-wide text-ink-3 uppercase">
+          Exemplo
+        </span>
+      )}
+    </span>
+  );
+}
 
 function BigMoney({ value, className }: { value: number; className?: string }) {
   const { main, cents } = splitMoney(value);
@@ -54,7 +65,8 @@ function BigMoney({ value, className }: { value: number; className?: string }) {
 
 /* ───────────────── Gastos no mês + Resumo (Nivi) ───────────────── */
 export function SpendingCard() {
-  const { diff, perDay } = pace;
+  const { summary: month } = useFinance();
+  const { diff, perDay } = month.pace;
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
@@ -76,7 +88,7 @@ export function SpendingCard() {
         <div className="relative mt-2 min-h-[132px] flex-1">
           <ClientOnly fallback={<ChartFallback h={132} />}>
             <ResponsiveContainer width="100%" height="100%" minHeight={132}>
-              <LineChart data={spendingCurve} margin={{ top: 12, right: 8, bottom: 0, left: 8 }}>
+              <LineChart data={month.spendingCurve} margin={{ top: 12, right: 8, bottom: 0, left: 8 }}>
                 <defs>
                   <linearGradient id="spendStroke" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#12b76a" />
@@ -192,9 +204,15 @@ function Donut({ data, size = 200, stroke = 26 }: { data: { value: number; color
 }
 
 export function DistributionCard() {
+  const { distribution } = useFinance().summary;
   const total = distribution.reduce((a, d) => a + d.value, 0);
   return (
     <Card title="Distribuição de Gastos" delay={60} className="h-full">
+      {total === 0 ? (
+        <p className="grid h-[200px] place-items-center text-center text-[14px] text-ink-3">
+          Nenhum gasto registrado neste mês ainda.
+        </p>
+      ) : (
       <div className="grid items-center gap-6 sm:grid-cols-[200px_1fr] md:gap-8">
         <div className="relative mx-auto size-[200px]">
           <Donut data={distribution.map((d) => ({ value: d.value, color: categories[d.key].color }))} />
@@ -232,12 +250,14 @@ export function DistributionCard() {
           })}
         </ul>
       </div>
+      )}
     </Card>
   );
 }
 
 /* ───────────────── Resultado parcial ───────────────── */
 export function ResultCard() {
+  const { summary: month } = useFinance();
   return (
     <Card title="Resultado Parcial" delay={120}>
       <p className="flex items-center gap-2">
@@ -268,7 +288,7 @@ export function ResultCard() {
 /* ───────────────── Investimentos ───────────────── */
 export function InvestmentsCard() {
   return (
-    <Card title="Investimentos" delay={160} className="flex flex-col">
+    <Card title={<DemoTitle>Investimentos</DemoTitle>} delay={160} className="flex flex-col">
       <p className="flex items-center gap-2">
         <Money className="text-[26px] font-bold tracking-[-0.035em]">{moneyShort(investments.total)}</Money>
         <Delta value={investments.change} />
@@ -333,7 +353,7 @@ export function EmergencyCard() {
   const months = emergency.current / emergency.monthlyCost;
   const ratio = emergency.current / emergency.target;
   return (
-    <Card title="Reserva de Emergência" delay={200}>
+    <Card title={<DemoTitle>Reserva de Emergência</DemoTitle>} delay={200}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="flex items-center gap-1.5 text-[13px] text-ink-3">
@@ -361,7 +381,7 @@ export function EmergencyCard() {
 export function RecurrencesCard() {
   return (
     <Card
-      title="Próximas recorrências"
+      title={<DemoTitle>Próximas recorrências</DemoTitle>}
       delay={240}
       action={
         <Link to="/recorrencias" className="text-[12px] font-semibold text-violet hover:underline">
@@ -391,6 +411,7 @@ export function RecurrencesCard() {
 
 /* ───────────────── Faturas ───────────────── */
 export function InvoicesCard() {
+  const { invoices } = useFinance().summary;
   return (
     <Card
       title={
@@ -435,7 +456,7 @@ export function GoalsCard() {
   const pctDone = (g.current / g.target) * 100;
   return (
     <Card
-      title="Metas"
+      title={<DemoTitle>Metas</DemoTitle>}
       delay={320}
       className="flex flex-col"
       action={
@@ -472,19 +493,30 @@ export function GoalsCard() {
 
 /* ───────────────── Saudação do Nivi ───────────────── */
 export function NiviGreeting() {
+  const { summary: month, session } = useFinance();
+  const pace = month.pace;
+  const top = month.distribution[0];
+  const name = session?.user.user_metadata?.name ?? session?.user.email?.split("@")[0] ?? "Richard";
   return (
     <div className="rise relative mb-5 flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-white to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
       <span className="nivo-gradient grid size-14 shrink-0 place-items-center rounded-2xl">
         <Nivi className="size-12" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[16px] font-bold tracking-[-0.02em]">Oi, Richard! Eu sou o Nivi 👋</p>
+        <p className="text-[16px] font-bold tracking-[-0.02em]">Oi, {name}! Eu sou o Nivi 👋</p>
         <p className="text-[13px] text-ink-2">
           Analisei suas finanças: você está{" "}
-          <b className="text-positive">
-            <Money>{moneyShort(pace.diff)}</Money> abaixo
+          <b className={pace.diff >= 0 ? "text-positive" : "text-pink"}>
+            <Money>{moneyShort(Math.abs(pace.diff))}</Money> {pace.diff >= 0 ? "abaixo" : "acima"}
           </b>{" "}
-          do ritmo do orçamento, mas o delivery já passou do limite.
+          do ritmo do orçamento
+          {top ? (
+            <>
+              , e seu maior gasto é <b>{categories[top.key].label}</b>.
+            </>
+          ) : (
+            "."
+          )}
         </p>
       </div>
       <div className="hidden text-right md:block">

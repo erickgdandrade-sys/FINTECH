@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriasRouteImport } from './routes/categorias'
 import { Route as ContasRouteImport } from './routes/contas'
+import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FaturasRouteImport } from './routes/faturas'
 import { Route as FluxoDeCaixaRouteImport } from './routes/fluxo-de-caixa'
 import { Route as MetasRouteImport } from './routes/metas'
@@ -19,6 +20,7 @@ import { Route as PatrimonioRouteImport } from './routes/patrimonio'
 import { Route as ProjecaoRouteImport } from './routes/projecao'
 import { Route as RecorrenciasRouteImport } from './routes/recorrencias'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
+import { Route as ApiPluggyWebhookRouteImport } from './routes/api/pluggy/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +35,11 @@ const CategoriasRoute = CategoriasRouteImport.update({
 const ContasRoute = ContasRouteImport.update({
   id: '/contas',
   path: '/contas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaturasRoute = FaturasRouteImport.update({
@@ -70,11 +77,17 @@ const TransacoesRoute = TransacoesRouteImport.update({
   path: '/transacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPluggyWebhookRoute = ApiPluggyWebhookRouteImport.update({
+  id: '/api/pluggy/webhook',
+  path: '/api/pluggy/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categorias': typeof CategoriasRoute
   '/contas': typeof ContasRoute
+  '/entrar': typeof EntrarRoute
   '/faturas': typeof FaturasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
@@ -82,11 +95,13 @@ export interface FileRoutesByFullPath {
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/pluggy/webhook': typeof ApiPluggyWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categorias': typeof CategoriasRoute
   '/contas': typeof ContasRoute
+  '/entrar': typeof EntrarRoute
   '/faturas': typeof FaturasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
@@ -94,12 +109,14 @@ export interface FileRoutesByTo {
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/pluggy/webhook': typeof ApiPluggyWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/categorias': typeof CategoriasRoute
   '/contas': typeof ContasRoute
+  '/entrar': typeof EntrarRoute
   '/faturas': typeof FaturasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
   '/metas': typeof MetasRoute
@@ -107,6 +124,7 @@ export interface FileRoutesById {
   '/projecao': typeof ProjecaoRoute
   '/recorrencias': typeof RecorrenciasRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/pluggy/webhook': typeof ApiPluggyWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/categorias'
     | '/contas'
+    | '/entrar'
     | '/faturas'
     | '/fluxo-de-caixa'
     | '/metas'
@@ -121,11 +140,13 @@ export interface FileRouteTypes {
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
+    | '/api/pluggy/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/categorias'
     | '/contas'
+    | '/entrar'
     | '/faturas'
     | '/fluxo-de-caixa'
     | '/metas'
@@ -133,11 +154,13 @@ export interface FileRouteTypes {
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
+    | '/api/pluggy/webhook'
   id:
     | '__root__'
     | '/'
     | '/categorias'
     | '/contas'
+    | '/entrar'
     | '/faturas'
     | '/fluxo-de-caixa'
     | '/metas'
@@ -145,12 +168,14 @@ export interface FileRouteTypes {
     | '/projecao'
     | '/recorrencias'
     | '/transacoes'
+    | '/api/pluggy/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriasRoute: typeof CategoriasRoute
   ContasRoute: typeof ContasRoute
+  EntrarRoute: typeof EntrarRoute
   FaturasRoute: typeof FaturasRoute
   FluxoDeCaixaRoute: typeof FluxoDeCaixaRoute
   MetasRoute: typeof MetasRoute
@@ -158,6 +183,7 @@ export interface RootRouteChildren {
   ProjecaoRoute: typeof ProjecaoRoute
   RecorrenciasRoute: typeof RecorrenciasRoute
   TransacoesRoute: typeof TransacoesRoute
+  ApiPluggyWebhookRoute: typeof ApiPluggyWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/contas'
       fullPath: '/contas'
       preLoaderRoute: typeof ContasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faturas': {
@@ -232,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pluggy/webhook': {
+      id: '/api/pluggy/webhook'
+      path: '/api/pluggy/webhook'
+      fullPath: '/api/pluggy/webhook'
+      preLoaderRoute: typeof ApiPluggyWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -239,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriasRoute: CategoriasRoute,
   ContasRoute: ContasRoute,
+  EntrarRoute: EntrarRoute,
   FaturasRoute: FaturasRoute,
   FluxoDeCaixaRoute: FluxoDeCaixaRoute,
   MetasRoute: MetasRoute,
@@ -246,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjecaoRoute: ProjecaoRoute,
   RecorrenciasRoute: RecorrenciasRoute,
   TransacoesRoute: TransacoesRoute,
+  ApiPluggyWebhookRoute: ApiPluggyWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

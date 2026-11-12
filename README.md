@@ -2,6 +2,10 @@
 
 Plataforma de finanças pessoais com o **Nivi**, assistente financeiro com IA.
 
+## Open Finance
+
+Para conectar bancos reais via Pluggy, siga [docs/CONFIGURACAO.md](docs/CONFIGURACAO.md). Sem configuração, o app roda com dados de exemplo.
+
 ## Rodando localmente
 
 Requer Node.js 20+.

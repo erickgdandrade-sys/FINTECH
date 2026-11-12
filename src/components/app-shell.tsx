@@ -11,6 +11,8 @@ import {
   Landmark,
   LayoutGrid,
   LineChart,
+  LogIn,
+  LogOut,
   Menu,
   PieChart,
   Plus,
@@ -21,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useFinance } from "@/lib/finance";
 import { NivoAppIcon, NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
 
@@ -133,15 +136,50 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </button>
       </div>
 
-      <button className="flex items-center gap-3 border-t border-line px-6 py-4 text-left hover:bg-canvas">
-        <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet to-pink text-[13px] font-bold text-white">
-          RJ
-        </span>
-        <span className="flex-1">
-          <span className="block text-[14px] font-semibold">Richard Jesus</span>
-          <span className="block text-[12px] text-ink-3">Plano Free</span>
-        </span>
-        <ChevronDown size={16} className="text-ink-3" />
+      <UserFooter onNavigate={onNavigate} />
+    </div>
+  );
+}
+
+function UserFooter({ onNavigate }: { onNavigate?: () => void }) {
+  const { session, configured, signOut, mode } = useFinance();
+  if (!session) {
+    return (
+      <div className="border-t border-line px-4 py-4">
+        <Link
+          to={configured ? "/entrar" : "/contas"}
+          onClick={onNavigate}
+          className="flex items-center justify-center gap-2 rounded-xl bg-ink py-2.5 text-[14px] font-semibold text-white hover:bg-ink/90"
+        >
+          <LogIn size={16} /> Entrar
+        </Link>
+        <p className="mt-2 text-center text-[11px] text-ink-3">Você está vendo dados de exemplo</p>
+      </div>
+    );
+  }
+  const name = (session.user.user_metadata?.name as string | undefined) ?? session.user.email ?? "Você";
+  const initials = name
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]!.toUpperCase())
+    .join("");
+  return (
+    <div className="flex items-center gap-3 border-t border-line px-6 py-4">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-violet to-pink text-[13px] font-bold text-white">
+        {initials}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[14px] font-semibold">{name}</span>
+        <span className="block text-[12px] text-ink-3">{mode === "live" ? "Open Finance ativo" : "Nenhum banco conectado"}</span>
+      </span>
+      <button
+        onClick={signOut}
+        className="grid size-8 place-items-center rounded-full text-ink-3 hover:bg-canvas hover:text-ink"
+        aria-label="Sair"
+        title="Sair"
+      >
+        <LogOut size={16} />
       </button>
     </div>
   );
@@ -153,6 +191,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => setDrawer(false), [pathname]);
+
+  // Telas sem o layout do app (login).
+  if (pathname === "/entrar") return <>{children}</>;
 
   return (
     <PrivacyCtx.Provider value={{ hidden, toggle: () => setHidden((h) => !h) }}>

@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { AppShell } from "@/components/app-shell";
+import { FinanceProvider } from "@/lib/finance";
 import { Route as Index } from "@/routes/index";
 import { Route as Transacoes } from "@/routes/transacoes";
 import { Route as Metas } from "@/routes/metas";
@@ -26,9 +27,11 @@ import "@/styles.css";
 
 const root = createRootRoute({
   component: () => (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <FinanceProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </FinanceProvider>
   ),
 });
 

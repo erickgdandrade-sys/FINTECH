@@ -11,7 +11,13 @@ export type CategoryKey =
   | "transporte"
   | "eletronicos"
   | "salario"
-  | "investimento";
+  | "investimento"
+  | "transferencias"
+  | "mercado"
+  | "saude"
+  | "lazer"
+  | "taxas"
+  | "outros";
 
 export const categories: Record<
   CategoryKey,
@@ -25,6 +31,12 @@ export const categories: Record<
   eletronicos: { label: "Eletrônicos", color: "#8fd400", soft: "#f3ffd6", emoji: "🎧" },
   salario: { label: "Salário", color: "#12b76a", soft: "#e3f8ec", emoji: "💼" },
   investimento: { label: "Investimento", color: "#6a00ff", soft: "#efe5ff", emoji: "📈" },
+  transferencias: { label: "Transferências", color: "#4a4668", soft: "#efeef7", emoji: "🔁" },
+  mercado: { label: "Mercado", color: "#00a3b8", soft: "#ddfbff", emoji: "🥦" },
+  saude: { label: "Saúde", color: "#e0005f", soft: "#ffe3f0", emoji: "💊" },
+  lazer: { label: "Lazer", color: "#ff8a33", soft: "#ffeedf", emoji: "🎟️" },
+  taxas: { label: "Taxas e juros", color: "#8b88a6", soft: "#f1f0f8", emoji: "🧾" },
+  outros: { label: "Outros", color: "#b3b0c9", soft: "#f1f0f8", emoji: "•" },
 };
 
 export const month = {
