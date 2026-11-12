@@ -6,6 +6,8 @@ import type { CategoryKey } from "./data";
  */
 const rules: [CategoryKey, RegExp][] = [
   ["salario", /salary|salár|income|renda|remunera|wage|proventos/i],
+  // Boleto é quase sempre uma despesa (conta, compra), não transferência entre contas próprias.
+  ["moradia", /bank slip|boleto|utilities|electric|telecom/i],
   ["investimento", /invest|aplica|savings|poupan|fixed income|tesouro/i],
   ["transferencias", /transfer|pix|ted\b|doc\b|same person|credit card payment|pagamento de fatura|pagto fatura/i],
   ["moradia", /rent|aluguel|housing|moradia|condom|mortgage|utilities|electric|water|gas\b|energia|internet|telecom|telefon|phone/i],

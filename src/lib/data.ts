@@ -2,6 +2,7 @@
  * Dados de demonstração. Substitua por chamadas à API / banco
  * mantendo os mesmos formatos.
  */
+import type { GoalIconKey } from "@/components/icons";
 
 export type CategoryKey =
   | "moradia"
@@ -21,22 +22,22 @@ export type CategoryKey =
 
 export const categories: Record<
   CategoryKey,
-  { label: string; color: string; soft: string; emoji: string }
+  { label: string; color: string; soft: string }
 > = {
-  moradia: { label: "Aluguel", color: "#6a00ff", soft: "#efe5ff", emoji: "🏠" },
-  delivery: { label: "Delivery", color: "#ff007a", soft: "#ffe3f0", emoji: "🍔" },
-  compras: { label: "Compras", color: "#00c2d9", soft: "#ddfbff", emoji: "🛒" },
-  assinaturas: { label: "Assinaturas", color: "#ff6b00", soft: "#ffeedf", emoji: "📺" },
-  transporte: { label: "Táxi e Apps", color: "#9d5cff", soft: "#f1e8ff", emoji: "🚕" },
-  eletronicos: { label: "Eletrônicos", color: "#8fd400", soft: "#f3ffd6", emoji: "🎧" },
-  salario: { label: "Salário", color: "#12b76a", soft: "#e3f8ec", emoji: "💼" },
-  investimento: { label: "Investimento", color: "#6a00ff", soft: "#efe5ff", emoji: "📈" },
-  transferencias: { label: "Transferências", color: "#4a4668", soft: "#efeef7", emoji: "🔁" },
-  mercado: { label: "Mercado", color: "#00a3b8", soft: "#ddfbff", emoji: "🥦" },
-  saude: { label: "Saúde", color: "#e0005f", soft: "#ffe3f0", emoji: "💊" },
-  lazer: { label: "Lazer", color: "#ff8a33", soft: "#ffeedf", emoji: "🎟️" },
-  taxas: { label: "Taxas e juros", color: "#8b88a6", soft: "#f1f0f8", emoji: "🧾" },
-  outros: { label: "Outros", color: "#b3b0c9", soft: "#f1f0f8", emoji: "•" },
+  moradia: { label: "Moradia e contas", color: "#6a00ff", soft: "#efe5ff" },
+  delivery: { label: "Delivery", color: "#ff007a", soft: "#ffe3f0" },
+  compras: { label: "Compras", color: "#00c2d9", soft: "#ddfbff" },
+  assinaturas: { label: "Assinaturas", color: "#ff6b00", soft: "#ffeedf" },
+  transporte: { label: "Táxi e Apps", color: "#9d5cff", soft: "#f1e8ff" },
+  eletronicos: { label: "Eletrônicos", color: "#8fd400", soft: "#f3ffd6" },
+  salario: { label: "Salário", color: "#12b76a", soft: "#e3f8ec" },
+  investimento: { label: "Investimento", color: "#6a00ff", soft: "#efe5ff" },
+  transferencias: { label: "Transferências", color: "#4a4668", soft: "#efeef7" },
+  mercado: { label: "Mercado", color: "#00a3b8", soft: "#ddfbff" },
+  saude: { label: "Saúde", color: "#e0005f", soft: "#ffe3f0" },
+  lazer: { label: "Lazer", color: "#ff8a33", soft: "#ffeedf" },
+  taxas: { label: "Taxas e juros", color: "#8b88a6", soft: "#f1f0f8" },
+  outros: { label: "Outros", color: "#b3b0c9", soft: "#f1f0f8" },
 };
 
 export const month = {
@@ -136,7 +137,7 @@ export const goals = [
     target: 15000,
     due: "05/10/2026",
     priority: true,
-    emoji: "✈️",
+    icon: "viagem" as GoalIconKey,
     color: "#6a00ff",
   },
   {
@@ -145,7 +146,7 @@ export const goals = [
     target: 9000,
     due: "03/2027",
     priority: false,
-    emoji: "💻",
+    icon: "tecnologia" as GoalIconKey,
     color: "#ff007a",
   },
   {
@@ -154,7 +155,7 @@ export const goals = [
     target: 80000,
     due: "12/2028",
     priority: false,
-    emoji: "🏡",
+    icon: "casa" as GoalIconKey,
     color: "#00c2d9",
   },
 ];

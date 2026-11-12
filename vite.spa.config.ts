@@ -12,6 +12,7 @@ export default defineConfig({
     alias: [
       // Sem servidor na demo: troca as funções de servidor por um stub.
       { find: /^@\/lib\/open-finance$/, replacement: fileURLToPath(new URL("./spa/open-finance-stub.ts", import.meta.url)) },
+      { find: /^@\/lib\/nivi-api$/, replacement: fileURLToPath(new URL("./spa/nivi-stub.ts", import.meta.url)) },
     ],
   },
   plugins: [tsconfigPaths({ root: ".." }), tailwindcss(), viteReact()],

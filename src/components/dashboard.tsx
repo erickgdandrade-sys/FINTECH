@@ -34,6 +34,7 @@ import { useFinance } from "@/lib/finance";
 import { money, moneyShort, splitMoney } from "@/lib/format";
 import { Money } from "./app-shell";
 import { Nivi } from "./brand";
+import { CategoryIcon } from "./icons";
 import { Card, Delta, Progress } from "./ui";
 
 const ChartFallback = ({ h }: { h: number }) => <div style={{ height: h }} className="animate-pulse rounded-xl bg-canvas" />;
@@ -230,9 +231,7 @@ export function DistributionCard() {
             const near = d.limit !== undefined && !over && d.value / d.limit > 0.9;
             return (
               <li key={d.key} className="flex items-center gap-3 py-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg text-[15px]" style={{ background: cat.soft }}>
-                  {cat.emoji}
-                </span>
+                <CategoryIcon k={d.key} />
                 <span className="text-[14px] font-medium">{cat.label}</span>
                 <span className="rounded-md bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-ink-3 tabular">
                   {share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
@@ -503,7 +502,7 @@ export function NiviGreeting() {
         <Nivi className="size-12" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[16px] font-bold tracking-[-0.02em]">Oi, {name}! Eu sou o Nivi 👋</p>
+        <p className="text-[16px] font-bold tracking-[-0.02em]">Oi, {name}! Eu sou o Nivi.</p>
         <p className="text-[13px] text-ink-2">
           Analisei suas finanças: você está{" "}
           <b className={pace.diff >= 0 ? "text-positive" : "text-pink"}>

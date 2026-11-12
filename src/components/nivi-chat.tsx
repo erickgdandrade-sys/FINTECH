@@ -1,34 +1,68 @@
 import clsx from "clsx";
 import { ArrowUp, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Fragment, type ReactNode } from "react";
 import { pace } from "@/lib/data";
+import { useFinance } from "@/lib/finance";
+import { chatWithNivi } from "@/lib/nivi-api";
 import { Nivi } from "./brand";
 
-type Msg = { from: "nivi" | "me"; text: string };
+type Msg = { from: "nivi" | "me"; text: string; error?: boolean };
 
-const suggestions = [
-  "Quanto posso gastar hoje?",
+const demoSuggestions = ["Quanto posso gastar hoje?", "Onde estou gastando mais?", "Como bater minha meta?"];
+const liveSuggestions = [
+  "Quanto posso gastar por dia até o fim do mês?",
   "Onde estou gastando mais?",
-  "Como bater minha meta?",
+  "Quais assinaturas eu pago?",
+  "Como economizar R$ 500 por mês?",
 ];
 
-/** Respostas locais de demonstração — troque por uma chamada ao seu backend de IA. */
-function reply(q: string): string {
+/** Formata a resposta: **negrito**, listas com "- " e quebras de linha. */
+function Rich({ text }: { text: string }) {
+  const inline = (line: string): ReactNode[] =>
+    line.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") ? <b key={i}>{part.slice(2, -2)}</b> : <Fragment key={i}>{part}</Fragment>,
+    );
+  const lines = text.split("\n").filter((l, i, a) => l.trim() || (i > 0 && a[i - 1].trim()));
+  return (
+    <>
+      {lines.map((l, i) => {
+        const bullet = /^\s*[-*•]\s+/.test(l);
+        return bullet ? (
+          <span key={i} className="flex gap-1.5 pl-1">
+            <span className="text-violet">•</span>
+            <span>{inline(l.replace(/^\s*[-*•]\s+/, ""))}</span>
+          </span>
+        ) : (
+          <span key={i} className="block">
+            {inline(l.replace(/^#+\s*/, ""))}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
+/** Respostas locais do modo demonstração (sem login). */
+function demoReply(q: string): string {
   const s = q.toLowerCase();
   if (s.includes("hoje") || s.includes("gastar"))
-    return `Para fechar o mês dentro dos R$ 3.000, você pode gastar até R$ ${pace.perDay} por dia nos próximos ${pace.remainingDays} dias. 💜`;
+    return `Para fechar o mês dentro dos R$ 3.000, você pode gastar até R$ ${pace.perDay} por dia nos próximos ${pace.remainingDays} dias.`;
   if (s.includes("mais") || s.includes("onde"))
     return "Seu maior gasto variável é Delivery: R$ 1.067 (12,5% do total), já R$ 167 acima do limite. Quer que eu crie um alerta?";
   if (s.includes("meta"))
-    return "A Viagem Chile está 93% concluída. Com R$ 250 por semana você chega lá em 4 semanas — antes do prazo! ✈️";
+    return "A Viagem Chile está 93% concluída. Com R$ 250 por semana você chega lá em 4 semanas, antes do prazo.";
   return "Ainda estou aprendendo sobre isso. Tente perguntar sobre seus gastos, metas ou orçamento do mês.";
 }
 
 export function NiviFab() {
+  const { session, mode } = useFinance();
+  const live = Boolean(session);
+  const suggestions = live ? liveSuggestions : demoSuggestions;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([
-    { from: "nivi", text: "Oi! Eu sou o Nivi 👋 Analisei suas finanças. Como posso ajudar?" },
+    { from: "nivi", text: "Oi! Eu sou o Nivi. Pergunte qualquer coisa sobre seus gastos, contas e metas." },
   ]);
   const [typing, setTyping] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -37,16 +71,40 @@ export function NiviFab() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, typing]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const t = text.trim();
-    if (!t) return;
-    setMsgs((m) => [...m, { from: "me", text: t }]);
+    if (!t || typing) return;
+    const next = [...msgs, { from: "me" as const, text: t }];
+    setMsgs(next);
     setInput("");
     setTyping(true);
-    setTimeout(() => {
+
+    if (!live || !session) {
+      setTimeout(() => {
+        setTyping(false);
+        setMsgs((m) => [...m, { from: "nivi", text: demoReply(t) }]);
+      }, 700);
+      return;
+    }
+
+    try {
+      // Envia o histórico (sem a saudação inicial e sem mensagens de erro).
+      const history = next
+        .slice(1)
+        .filter((m) => !m.error)
+        .map((m) => ({ role: m.from === "me" ? ("user" as const) : ("model" as const), text: m.text }));
+      const res = await chatWithNivi({ data: { accessToken: session.access_token, history } });
+      setMsgs((m) => [
+        ...m,
+        "reply" in res && res.reply
+          ? { from: "nivi", text: res.reply }
+          : { from: "nivi", text: ("error" in res && res.error) || "Algo deu errado.", error: true },
+      ]);
+    } catch {
+      setMsgs((m) => [...m, { from: "nivi", text: "Não consegui me conectar agora. Tente de novo.", error: true }]);
+    } finally {
       setTyping(false);
-      setMsgs((m) => [...m, { from: "nivi", text: reply(t) }]);
-    }, 700);
+    }
   };
 
   return (
@@ -66,7 +124,9 @@ export function NiviFab() {
             <p className="flex items-center gap-1.5 font-bold">
               Nivi <Sparkles size={14} className="text-lime" />
             </p>
-            <p className="text-[12px] text-white/70">Seu assistente financeiro com IA</p>
+            <p className="text-[12px] text-white/70">
+              {live ? (mode === "live" ? "Analisando seus dados reais" : "Conecte um banco para análises") : "Modo demonstração"}
+            </p>
           </div>
           <button
             onClick={() => setOpen(false)}
@@ -82,13 +142,15 @@ export function NiviFab() {
             <div
               key={i}
               className={clsx(
-                "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[14px] leading-snug",
+                "max-w-[85%] space-y-1 rounded-2xl px-3.5 py-2.5 text-[14px] leading-snug",
                 m.from === "nivi"
-                  ? "rounded-tl-md bg-white text-ink shadow-sm"
+                  ? m.error
+                    ? "rounded-tl-md bg-pink-soft text-pink"
+                    : "rounded-tl-md bg-white text-ink shadow-sm"
                   : "ml-auto rounded-tr-md bg-violet text-white",
               )}
             >
-              {m.text}
+              {m.from === "nivi" ? <Rich text={m.text} /> : m.text}
             </div>
           ))}
           {typing && (
@@ -131,7 +193,7 @@ export function NiviFab() {
           <button
             type="submit"
             className="grid size-11 place-items-center rounded-xl bg-lime text-ink hover:brightness-95 disabled:opacity-40"
-            disabled={!input.trim()}
+            disabled={!input.trim() || typing}
             aria-label="Enviar"
           >
             <ArrowUp size={18} strokeWidth={2.6} />

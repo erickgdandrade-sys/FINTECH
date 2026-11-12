@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { ArrowDownCircle, ArrowUpCircle, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
+import { CategoryIcon, categoryIcon } from "@/components/icons";
 import { categories, type CategoryKey } from "@/lib/data";
 import { useFinance } from "@/lib/finance";
 import { money } from "@/lib/format";
@@ -15,6 +16,11 @@ type Kind = "todas" | "entradas" | "saidas";
 
 const dayLabel = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+
+function ChipIcon({ k, active }: { k: CategoryKey; active: boolean }) {
+  const Icon = categoryIcon(k);
+  return <Icon size={13} strokeWidth={2.4} style={{ color: active ? "white" : categories[k].color }} />;
+}
 
 function Transactions() {
   const { transactions, summary, mode } = useFinance();
@@ -106,12 +112,13 @@ function Transactions() {
               key={k}
               onClick={() => setCat(cat === k ? null : k)}
               className={clsx(
-                "shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors",
                 cat === k ? "text-white" : "text-ink-2 hover:brightness-95",
               )}
               style={{ background: cat === k ? categories[k].color : categories[k].soft }}
             >
-              {categories[k].emoji} {categories[k].label}
+              <ChipIcon k={k} active={cat === k} />
+              {categories[k].label}
             </button>
           ))}
         </div>
@@ -130,9 +137,7 @@ function Transactions() {
                   const c = categories[t.category];
                   return (
                     <li key={t.id} className="flex items-center gap-3 rounded-xl px-1 py-3 hover:bg-canvas/60">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-xl text-[17px]" style={{ background: c.soft }}>
-                        {c.emoji}
-                      </span>
+                      <CategoryIcon k={t.category} size="lg" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[14px] font-semibold">{t.description}</p>
                         <p className="text-[12px] text-ink-3">

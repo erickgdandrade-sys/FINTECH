@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Money, PageHeader } from "@/components/app-shell";
 import { Nivi } from "@/components/brand";
+import { GoalIcon } from "@/components/icons";
 import { Progress } from "@/components/ui";
 import { goals } from "@/lib/data";
 import { moneyShort } from "@/lib/format";
@@ -41,9 +42,7 @@ function Goals() {
           return (
             <article key={g.name} className="card rise p-6" style={{ animationDelay: `${i * 60}ms` }}>
               <div className="flex items-start justify-between">
-                <span className="grid size-12 place-items-center rounded-2xl text-[22px]" style={{ background: `${g.color}18` }}>
-                  {g.emoji}
-                </span>
+                <GoalIcon k={g.icon} color={g.color} />
                 {g.priority && (
                   <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold text-ink">Prioridade</span>
                 )}

@@ -52,6 +52,15 @@ npm run dev            # http://localhost:3000
 Crie sua conta em **Entrar → Criar conta**, vá em **Contas → Conectar banco** e escolha o Pluggy Bank.
 Ao terminar, o Nivo importa contas e 12 meses de transações, e o dashboard passa a mostrar seus dados.
 
+## Nivi (IA com Google Gemini)
+
+1. Em https://aistudio.google.com clique em **Get API key → Create API key**.
+2. Cadastre `GEMINI_API_KEY` (Secret) na Vercel e faça **Redeploy**.
+3. Privacidade: por padrão o Nivi envia ao Gemini só totais por mês/categoria, saldos e recorrências.
+   Com `NIVI_ENVIAR_TRANSACOES=true` ele também envia os lançamentos dos últimos 45 dias.
+   ⚠️ No plano **gratuito** o Google pode usar o conteúdo enviado para melhorar os modelos.
+   Para dados bancários reais, prefira ativar o faturamento (plano pago) no Google AI Studio.
+
 ## 4. Webhooks (atualização automática) — quando o app estiver publicado
 
 A Pluggy avisa o Nivo quando chegam transações novas. Isso só funciona com uma URL pública HTTPS
