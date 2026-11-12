@@ -34,6 +34,22 @@ export type AccountRow = {
   credit_limit: number | null;
   available_credit_limit: number | null;
   balance_due_date: string | null;
+  balance_close_date?: string | null;
+  minimum_payment?: number | null;
+};
+
+export type InvoiceCard = {
+  id: string;
+  name: string;
+  bank: string;
+  logo: string | null;
+  color: string;
+  amount: number;
+  dueDate: string | null; // YYYY-MM-DD
+  closeDate: string | null;
+  limit: number | null;
+  available: number | null;
+  minimum: number | null;
 };
 
 type TxRow = {
@@ -61,7 +77,7 @@ export type Summary = {
   pace: { diff: number; perDay: number; remainingDays: number };
   spendingCurve: { day: number; ideal: number; real: number | null }[];
   distribution: { key: CategoryKey; value: number; limit?: number; trend?: "up" | "down" }[];
-  invoices: { total: number; dueDate: string; balanceAfter: number; cards: { name: string; color: string; amount: number }[] };
+  invoices: { total: number; dueDate: string; balanceAfter: number; cards: InvoiceCard[] };
 };
 
 export type Goal = {
@@ -197,7 +213,22 @@ function buildSummary(
       total,
       dueDate: nextDue ? brDate(nextDue) : "—",
       balanceAfter: balance - total,
-      cards: credit.map((c) => ({ name: c.name, color: color(c), amount: Number(c.balance) })),
+      cards: credit.map((c) => {
+        const item = items.find((i) => i.id === c.item_id);
+        return {
+          id: c.id,
+          name: c.name,
+          bank: item?.connector_name ?? "Banco",
+          logo: item?.connector_image ?? null,
+          color: color(c),
+          amount: Number(c.balance),
+          dueDate: c.balance_due_date,
+          closeDate: c.balance_close_date ?? null,
+          limit: c.credit_limit != null ? Number(c.credit_limit) : null,
+          available: c.available_credit_limit != null ? Number(c.available_credit_limit) : null,
+          minimum: c.minimum_payment != null ? Number(c.minimum_payment) : null,
+        };
+      }),
     },
   };
 }
@@ -218,7 +249,22 @@ const demoSummary: Summary = {
   pace: demo.pace,
   spendingCurve: demo.spendingCurve,
   distribution: demo.distribution,
-  invoices: demo.invoices,
+  invoices: {
+    ...demo.invoices,
+    cards: demo.invoices.cards.map((c, i) => ({
+      id: `demo-card-${i}`,
+      name: `Cartão ${c.name}`,
+      bank: c.name,
+      logo: null,
+      color: c.color,
+      amount: c.amount,
+      dueDate: ["2026-11-22", "2026-11-25", "2026-12-02"][i] ?? null,
+      closeDate: ["2026-11-15", "2026-11-18", "2026-11-25"][i] ?? null,
+      limit: [5000, 3000, 2500][i] ?? null,
+      available: [5000 - c.amount, 3000 - c.amount, 2500 - c.amount][i] ?? null,
+      minimum: Math.round(c.amount * 0.15),
+    })),
+  },
 };
 
 /** "05/10/2026" ou "03/2027" → "2026-10-05" / "2027-03-01". */

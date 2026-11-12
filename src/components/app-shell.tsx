@@ -2,7 +2,6 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
 import {
   ArrowLeftRight,
-  Bell,
   CalendarRange,
   CalendarSync,
   ChevronDown,
@@ -28,6 +27,7 @@ import { useFinance } from "@/lib/finance";
 import { NivoAppIcon, NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
 import { NiviStage } from "./nivi-stage";
+import { NotificationsBell } from "./notifications";
 import { ThemeSwitch } from "./theme-switch";
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
@@ -245,10 +245,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NivoAppIcon className="size-8" />
             <span className="text-lg font-extrabold tracking-[-0.04em]">Nivo</span>
           </Link>
-          <button className="relative grid size-10 place-items-center rounded-xl bg-canvas" aria-label="Notificações">
-            <Bell size={18} />
-            <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-pink ring-2 ring-canvas" />
-          </button>
+          <NotificationsBell />
         </header>
 
         <main className="lg:pl-[248px]">
@@ -293,13 +290,7 @@ export function PageHeader({
           </select>
           <ChevronDown size={15} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-ink-3" />
         </label>
-        <button
-          className="relative hidden size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 hover:text-ink lg:grid"
-          aria-label="Notificações"
-        >
-          <Bell size={18} />
-          <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-pink ring-2 ring-surface" />
-        </button>
+        <NotificationsBell className="hidden lg:block" />
         <button className="flex h-10 items-center gap-1.5 rounded-xl bg-lime px-3.5 text-[14px] font-bold text-ink shadow-[0_6px_16px_-8px_rgb(140_200_0)] hover:brightness-95">
           <Plus size={18} strokeWidth={2.6} />
           <span className="hidden sm:inline">Nova transação</span>

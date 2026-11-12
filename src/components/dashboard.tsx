@@ -31,6 +31,7 @@ import { useFinance } from "@/lib/finance";
 import { money, moneyShort, splitMoney } from "@/lib/format";
 import { Money } from "./app-shell";
 import { Nivi } from "./brand";
+import { BankLogo } from "./bank-logo";
 import { CategoryIcon, goalIcons } from "./icons";
 import { Card, Delta, Progress } from "./ui";
 
@@ -433,20 +434,13 @@ export function InvoicesCard() {
         <BigMoney value={invoices.total} className="text-[26px]" />
         <div className="flex -space-x-1.5">
           {invoices.cards.map((c) => (
-            <span
-              key={c.name}
-              title={`${c.name}: ${money(c.amount)}`}
-              className="grid h-5 w-7 place-items-center rounded-[5px] text-[9px] font-bold text-white ring-2 ring-surface"
-              style={{ background: c.color }}
-            >
-              {c.name[0]}
-            </span>
+            <BankLogo key={c.id} name={`${c.bank}: ${money(c.amount)}`} logo={c.logo} color={c.color} size="xs" />
           ))}
         </div>
       </div>
       <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full">
         {invoices.cards.map((c) => (
-          <span key={c.name} style={{ flex: c.amount, background: c.color }} />
+          <span key={c.id} style={{ flex: c.amount, background: c.color }} />
         ))}
       </div>
       <p className="mt-3 text-[13px] text-ink-2">

@@ -60,7 +60,7 @@ const PAGE_SCENE: Record<string, SceneName> = {
   "/categorias": "coins",
   "/recorrencias": "calendar",
   "/contas": "plug",
-  "/faturas": "money",
+  "/faturas": "coins",
   "/fluxo-de-caixa": "build",
   "/patrimonio": "build",
   "/projecao": "build",
