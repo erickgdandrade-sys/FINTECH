@@ -46,9 +46,11 @@ export const refreshItem = createServerFn({ method: "POST" })
   .validator((input: unknown) => withAuth<{ itemId: string }>(input))
   .handler(async ({ data }) => {
     const user = await requireUser(data.accessToken);
-    await getPluggy().updateItem(data.itemId);
-    const r = await syncItem(data.itemId, user.id);
-    return { status: r.item.status };
+    // Primeiro grava o que já está disponível; depois pede à Pluggy dados novos do banco
+    // (quando terminar, o webhook item/updated sincroniza de novo).
+    await syncItem(data.itemId, user.id);
+    const item = await getPluggy().updateItem(data.itemId);
+    return { status: item.status };
   });
 
 export const disconnectItem = createServerFn({ method: "POST" })

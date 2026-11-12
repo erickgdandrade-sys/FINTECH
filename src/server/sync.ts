@@ -39,7 +39,8 @@ function accountRow(a: Account, userId: string) {
     subtype: a.subtype,
     name: a.marketingName ?? a.name,
     number: a.number,
-    balance: a.balance,
+    // Cartão: guardamos o valor da fatura sempre positivo.
+    balance: a.type === "CREDIT" ? Math.abs(a.balance) : a.balance,
     currency_code: a.currencyCode,
     credit_limit: a.creditData?.creditLimit ?? null,
     available_credit_limit: a.creditData?.availableCreditLimit ?? null,
@@ -50,9 +51,12 @@ function accountRow(a: Account, userId: string) {
   };
 }
 
-function transactionRow(t: Transaction, itemId: string, userId: string) {
+function transactionRow(t: Transaction, itemId: string, userId: string, isCreditCard: boolean) {
   // Normaliza o sinal: saída sempre negativa, entrada sempre positiva.
+  // No cartão de crédito a Pluggy inverte: compra vem como CREDIT (aumenta a dívida)
+  // e pagamento/estorno como DEBIT.
   const abs = Math.abs(t.amount);
+  const isExpense = isCreditCard ? t.type === "CREDIT" : t.type === "DEBIT";
   const meta = t.creditCardMetadata;
   return {
     id: t.id,
@@ -61,7 +65,7 @@ function transactionRow(t: Transaction, itemId: string, userId: string) {
     user_id: userId,
     date: isoDate(t.date),
     description: t.description,
-    amount: t.type === "DEBIT" ? -abs : abs,
+    amount: isExpense ? -abs : abs,
     type: t.type,
     category: t.category,
     category_id: t.categoryId,
@@ -100,7 +104,7 @@ export async function syncItem(itemId: string, userId: string) {
   let total = 0;
   for (const account of accounts) {
     const txs = await pluggy.fetchAllTransactions(account.id, { dateFrom: isoDate(from)! });
-    await upsertChunks("transactions", txs.map((t) => transactionRow(t, itemId, userId)));
+    await upsertChunks("transactions", txs.map((t) => transactionRow(t, itemId, userId, account.type === "CREDIT")));
     total += txs.length;
   }
 
