@@ -116,13 +116,13 @@ function usePrefersReducedMotion() {
 }
 
 /** Partículas (dinheiro, moedas, brilhos, corações) que sobem e caem. */
-function Particles({ kind, count = 10 }: { kind: keyof typeof PARTICLES; count?: number }) {
+function Particles({ kind, count = 4 }: { kind: keyof typeof PARTICLES; count?: number }) {
   const items = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
-        dx: Math.round((Math.random() - 0.5) * 260),
-        up: 90 + Math.round(Math.random() * 110),
-        delay: Math.round(i * 160 + Math.random() * 120),
+        dx: Math.round((Math.random() - 0.5) * 70),
+        up: 22 + Math.round(Math.random() * 24),
+        delay: Math.round(i * 380 + Math.random() * 120),
         rot: Math.round((Math.random() - 0.5) * 540),
         prop: PARTICLES[kind][i % PARTICLES[kind].length],
       })),
@@ -164,11 +164,6 @@ export function NiviActor({ scene, size = 72, loop = false }: { scene: SceneName
       }
     >
       {def.particles && <Particles kind={def.particles} />}
-      {def.bubble && (
-        <span className="nivi-bubble absolute bottom-full left-0 mb-1 rounded-xl rounded-bl-sm bg-surface px-2.5 py-1.5 text-[11px] font-bold whitespace-nowrap text-ink shadow-[0_6px_16px_-6px_rgb(11_6_48/0.35)] ring-1 ring-line">
-          {def.bubble}
-        </span>
-      )}
       <NiviVector pose={def.pose} className="block w-full drop-shadow-[0_6px_10px_rgb(11_6_48/0.25)]" />
       {prop && PropIcon && (
         <span

@@ -54,10 +54,10 @@ function Ball({ className }: { className?: string }) {
 function MoneyBurst() {
   const items = useMemo(
     () =>
-      Array.from({ length: 9 }, (_, i) => ({
-        dx: Math.round((Math.random() - 0.5) * 200),
-        up: 50 + Math.round(Math.random() * 70),
-        delay: i * 180,
+      Array.from({ length: 4 }, (_, i) => ({
+        dx: Math.round((Math.random() - 0.5) * 70),
+        up: 22 + Math.round(Math.random() * 22),
+        delay: i * 380,
         rot: Math.round((Math.random() - 0.5) * 500),
         coin: i % 3 === 0,
       })),
@@ -157,18 +157,6 @@ export function NiviPerch({ balance, className }: { balance: number; className?:
           transition: moving ? `left ${action.ms}ms ${action.pose === "run" ? "cubic-bezier(.45,0,.55,1)" : "linear"}` : undefined,
         }}
       >
-        {action.bubble && !reduced && (
-          <span
-            key={`b${action.id}`}
-            className={clsx(
-              "nivi-bubble absolute bottom-full mb-1 rounded-xl bg-surface px-2.5 py-1.5 text-[11px] font-bold whitespace-nowrap text-ink shadow-[0_6px_16px_-6px_rgb(11_6_48/0.35)] ring-1 ring-line",
-              x > 55 ? "right-0 rounded-br-sm" : "left-0 rounded-bl-sm",
-            )}
-          >
-            {action.bubble}
-          </span>
-        )}
-
         {extra === "money" && <MoneyBurst key={`m${action.id}`} />}
         {extra === "zzz" && (
           <span className="absolute -top-2 right-0 font-brand text-[13px] font-extrabold text-violet">

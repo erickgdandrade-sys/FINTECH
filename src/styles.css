@@ -198,14 +198,14 @@ body {
 }
 
 .nivi-particle {
-  animation: particle-fly 1.9s cubic-bezier(0.25, 0.7, 0.4, 1) both;
+  animation: particle-fly 1.6s cubic-bezier(0.25, 0.7, 0.4, 1) both;
 }
 @keyframes particle-fly {
   0% { opacity: 0; transform: translate(0, 0) rotate(0); }
   10% { opacity: 1; }
   55% { transform: translate(var(--dx), calc(var(--up) * -1)) rotate(calc(var(--rot) / 2)); }
   85% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--dx) * 1.3), calc(var(--up) * -0.35)) rotate(var(--rot)); }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 1.1), calc(var(--up) * -0.6)) rotate(var(--rot)); }
 }
 
 .prop-scan { animation: prop-scan 0.9s ease-in-out infinite; transform-origin: 20% 80%; }
