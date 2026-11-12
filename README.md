@@ -1,4 +1,20 @@
-# Welcome to your Lovable project
+# Nivo — Sua vida financeira em outro nível
+
+Plataforma de finanças pessoais com o **Nivi**, assistente financeiro com IA.
+
+## Estrutura
+
+- `src/styles.css` — tokens da identidade visual (paleta Nivo, Inter, raios, sombras)
+- `src/components/brand.tsx` — logo N, ícone do app e mascote Nivi (SVG)
+- `src/components/app-shell.tsx` — sidebar, topbar mobile, cabeçalho de página e modo privacidade (ocultar valores)
+- `src/components/dashboard.tsx` — cards da Visão Geral
+- `src/components/nivi-chat.tsx` — chat flutuante do Nivi (respostas locais de demonstração)
+- `src/lib/data.ts` — dados de demonstração (troque pela sua API)
+- `src/routes/` — páginas (Visão geral, Transações, Metas e demais seções)
+
+---
+
+## Lovable
 
 This project was built with [Lovable](https://lovable.dev).
 
