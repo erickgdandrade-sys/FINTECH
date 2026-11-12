@@ -20,7 +20,8 @@ export const serverEnv = {
   },
   /** URL pública do webhook, ou undefined quando o app não está exposto na internet. */
   get webhookUrl(): string | undefined {
-    const base = process.env.PUBLIC_APP_URL;
+    // Na Netlify, URL é preenchida automaticamente com o endereço do site.
+    const base = process.env.PUBLIC_APP_URL || process.env.URL;
     const secret = process.env.PLUGGY_WEBHOOK_SECRET;
     if (!base || !secret || !base.startsWith("https://")) return undefined;
     return `${base.replace(/\/$/, "")}/api/pluggy/webhook?secret=${encodeURIComponent(secret)}`;

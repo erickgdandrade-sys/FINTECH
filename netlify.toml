@@ -1,0 +1,7 @@
+# Deploy na Netlify. As chaves ficam em Site configuration → Environment variables (nunca no repositório).
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
