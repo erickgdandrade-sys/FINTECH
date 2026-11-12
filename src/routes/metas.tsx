@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
 import { Nivi } from "@/components/brand";
 import { GoalIcon, goalIcons, type GoalIconKey } from "@/components/icons";
+import { useQuickIntent } from "@/components/quick-add";
 import { Progress } from "@/components/ui";
 import { useFinance, type Goal, type GoalInput } from "@/lib/finance";
 import { money, moneyShort } from "@/lib/format";
@@ -47,6 +48,8 @@ function Goals() {
     color: COLORS[goals.length % COLORS.length],
     priority: goals.length === 0,
   });
+
+  useQuickIntent(["meta"], () => setEditing(newGoal()), canEdit);
 
   return (
     <>

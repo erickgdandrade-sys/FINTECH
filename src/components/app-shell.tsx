@@ -5,7 +5,6 @@ import {
   Camera,
   CalendarRange,
   CalendarSync,
-  ChevronDown,
   CreditCard,
   Eye,
   EyeOff,
@@ -17,7 +16,6 @@ import {
   LogOut,
   Menu,
   PieChart,
-  Plus,
   Target,
   TrendingUp,
   Wallet,
@@ -30,6 +28,7 @@ import { NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
 import { NiviStage } from "./nivi-stage";
 import { NotificationsBell } from "./notifications";
+import { QuickAdd } from "./quick-add";
 import { ThemeSwitch } from "./theme-switch";
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
@@ -81,8 +80,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { hidden, toggle } = usePrivacy();
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-6 pt-7 pb-8">
+    <div className="flex h-full flex-col overflow-y-auto">
+      <div className="flex items-center justify-between px-6 pt-6 pb-6 lg:pt-7 lg:pb-8">
         <Link to="/" onClick={onNavigate} aria-label="Nivo — início">
           <NivoLogo />
         </Link>
@@ -96,7 +95,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </button>
       </div>
 
-      <nav className="flex-1 space-y-7 overflow-y-auto px-4">
+      <nav className="flex-1 space-y-6 px-4 pb-4">
         {nav.map((group) => (
           <div key={group.title}>
             <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.08em] text-ink-3 uppercase">
@@ -358,33 +357,16 @@ export function PageHeader({
   subtitle?: string;
   actions?: ReactNode;
 }) {
-  const [period, setPeriod] = useState("Mensal");
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 className="text-[26px] font-bold tracking-[-0.03em] sm:text-[28px]">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-[14px] text-ink-3">{subtitle}</p>}
+    <div className="mb-5 flex items-start justify-between gap-3 lg:mb-6 lg:items-center">
+      <div className="min-w-0">
+        <h1 className="text-[24px] leading-tight font-bold tracking-[-0.03em] text-balance sm:text-[28px]">{title}</h1>
+        {subtitle && <p className="mt-0.5 text-[13px] text-ink-3 sm:text-[14px]">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {actions}
-        <label className="relative">
-          <span className="sr-only">Período</span>
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="h-10 appearance-none rounded-xl border border-line bg-surface pr-9 pl-4 text-[14px] font-medium text-ink-2 hover:border-ink-3/40"
-          >
-            <option>Semanal</option>
-            <option>Mensal</option>
-            <option>Anual</option>
-          </select>
-          <ChevronDown size={15} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-ink-3" />
-        </label>
         <NotificationsBell className="hidden lg:block" />
-        <button className="flex h-10 items-center gap-1.5 rounded-xl bg-lime px-3.5 text-[14px] font-bold text-ink shadow-[0_6px_16px_-8px_rgb(140_200_0)] hover:brightness-95">
-          <Plus size={18} strokeWidth={2.6} />
-          <span className="hidden sm:inline">Nova transação</span>
-        </button>
+        <QuickAdd />
       </div>
     </div>
   );

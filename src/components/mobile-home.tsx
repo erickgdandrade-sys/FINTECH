@@ -70,13 +70,13 @@ export function MobileHome() {
         <Money className="mt-1 block text-[30px] font-bold tracking-[-0.035em]">{money(summary.balance)}</Money>
         <div className="mt-2 flex items-end justify-between gap-3">
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold ${up ? "bg-positive-soft text-positive" : "bg-pink-soft text-pink"}`}
+            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold whitespace-nowrap ${up ? "bg-positive-soft text-positive" : "bg-pink-soft text-pink"}`}
           >
             {up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
             {up ? "+" : ""}
             {change}% este mês
           </span>
-          <div className="-mr-5 -mb-5 h-16 w-[55%]">
+          <div className="-mr-5 -mb-5 h-16 min-w-0 flex-1">
             <ClientOnly fallback={null}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={series} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>

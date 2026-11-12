@@ -3,7 +3,9 @@ import clsx from "clsx";
 import { AlertTriangle, CheckCircle2, CreditCard, Landmark, Loader2, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
+import { BankLogo } from "@/components/bank-logo";
 import { Nivi } from "@/components/brand";
+import { useQuickIntent } from "@/components/quick-add";
 import { useFinance, type ItemRow } from "@/lib/finance";
 import { money } from "@/lib/format";
 import { createConnectToken, disconnectItem, refreshItem, registerItem } from "@/lib/open-finance";
@@ -60,6 +62,8 @@ function Accounts() {
       const { connectToken } = await createConnectToken({ data: { accessToken: token, itemId } });
       setConnect({ token: connectToken, updateItem: itemId });
     });
+
+  useQuickIntent(["banco"], () => openConnect(), Boolean(configured && session));
 
   if (!configured || !session) {
     return (
@@ -197,16 +201,7 @@ function ItemCard({
   return (
     <article className="card rise p-5 sm:p-6">
       <header className="flex items-center gap-3">
-        <span
-          className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-2xl"
-          style={{ background: item.primary_color ?? "#6a00ff" }}
-        >
-          {item.connector_image ? (
-            <img src={item.connector_image} alt="" className="size-8 object-contain" />
-          ) : (
-            <Landmark size={22} className="text-white" />
-          )}
-        </span>
+        <BankLogo name={item.connector_name} logo={item.connector_image} color={item.primary_color ?? "#6a00ff"} size="lg" />
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-[16px] font-bold">{item.connector_name}</h2>
           <p

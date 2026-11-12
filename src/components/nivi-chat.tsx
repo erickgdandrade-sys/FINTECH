@@ -117,7 +117,7 @@ export function NiviFab() {
     <>
       <div
         className={clsx(
-          "fixed right-4 bottom-44 z-40 flex w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6 lg:bottom-24",
+          "fixed right-4 bottom-40 z-40 flex h-[min(540px,calc(100dvh-12rem))] w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6 lg:bottom-24 lg:h-[min(540px,calc(100dvh-8rem))]",
           open ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
         )}
         role="dialog"
@@ -143,7 +143,7 @@ export function NiviFab() {
           </button>
         </div>
 
-        <div ref={listRef} className="h-[320px] space-y-3 overflow-y-auto bg-canvas px-4 py-4">
+        <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-canvas px-4 py-4">
           {msgs.map((m, i) => (
             <div
               key={i}
@@ -209,7 +209,7 @@ export function NiviFab() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="nivo-gradient fixed right-4 bottom-24 z-40 flex h-14 items-center gap-2 rounded-full pr-2 pl-2 lg:bottom-5 lg:pr-5 text-white shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 sm:right-6"
+        className="nivo-gradient fixed right-4 bottom-24 z-40 flex h-12 items-center gap-2 rounded-full pr-1.5 pl-1.5 lg:h-14 lg:pl-2 lg:bottom-5 lg:pr-5 text-white shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 sm:right-6"
         aria-expanded={open}
         aria-label="Falar com o Nivi"
       >

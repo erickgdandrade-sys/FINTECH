@@ -265,7 +265,7 @@ function Planning() {
         </div>
 
         <div className="nivo-gradient rise relative overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
-          <Nivi className="absolute -right-3 -bottom-5 size-28 opacity-90" sparkle={false} />
+          <Nivi className="absolute -right-3 -bottom-5 hidden size-28 opacity-90 sm:block" sparkle={false} />
           <p className="flex items-center gap-1.5 text-[13px] font-semibold text-lime">
             <Sparkles size={14} /> Análise do Nivi
           </p>

@@ -28,7 +28,7 @@ function Overview() {
       <PageHeader title={`Oi, ${name}`} subtitle={`Visão geral · ${summary.monthLabel}`} />
       <MobileHome />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-3">
         <SpendingCard />
         <div className="lg:col-span-2">
           <DistributionCard />

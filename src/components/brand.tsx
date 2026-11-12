@@ -55,5 +55,5 @@ export function NivoLogo({ dark = false, className }: { dark?: boolean; classNam
 
 /** Nivi — assistente financeiro com IA (vetorial, pisca e respira). */
 export function Nivi({ className, sparkle = true }: { className?: string; sparkle?: boolean }) {
-  return <NiviVector pose="idle" sparkle={sparkle} className={clsx("inline-block", className)} />;
+  return <NiviVector pose="idle" sparkle={sparkle} className={className} />;
 }

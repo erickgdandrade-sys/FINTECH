@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Money, PageHeader } from "@/components/app-shell";
 import { CategoryIcon } from "@/components/icons";
 import { Field, Modal } from "@/components/modal";
+import { useQuickIntent } from "@/components/quick-add";
 import { Progress } from "@/components/ui";
 import { categories, type CategoryKey } from "@/lib/data";
 import { useFinance } from "@/lib/finance";
@@ -54,6 +55,8 @@ function Recurrences() {
     end_date: null,
     installments: kind === "parcelado" ? 10 : null,
   });
+
+  useQuickIntent(["assinatura", "parcelado"], (i) => setDraft(blank(i === "parcelado" ? "parcelado" : "assinatura")), canEdit);
 
   const edit = (r: Recurrence) => {
     const row = manualRecurrences.find((m) => m.manualId === r.manualId);

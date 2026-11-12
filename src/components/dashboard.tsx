@@ -237,13 +237,13 @@ export function DistributionCard() {
             const over = d.limit !== undefined && d.value > d.limit;
             const near = d.limit !== undefined && !over && d.value / d.limit > 0.9;
             return (
-              <li key={d.key} className="flex items-center gap-3 py-2.5">
+              <li key={d.key} className="flex items-center gap-2.5 py-2.5 sm:gap-3">
                 <CategoryIcon k={d.key} />
-                <span className="text-[14px] font-medium">{cat.label}</span>
-                <span className="rounded-md bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-ink-3 tabular">
+                <span className="min-w-0 truncate text-[14px] font-medium">{cat.label}</span>
+                <span className="hidden shrink-0 rounded-md bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-ink-3 tabular min-[380px]:inline">
                   {share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
                 </span>
-                <span className="ml-auto flex items-center gap-1 text-[14px] font-semibold">
+                <span className="ml-auto flex shrink-0 items-center gap-1 text-[13px] font-semibold whitespace-nowrap sm:text-[14px]">
                   <Money className={clsx(over && "text-pink", near && "text-orange")}>{moneyShort(d.value)}</Money>
                   {d.limit !== undefined && (
                     <Money className="font-normal text-ink-3">/ {moneyShort(d.limit)}</Money>
@@ -435,7 +435,7 @@ export function InvoicesCard() {
         <BigMoney value={invoices.total} className="text-[26px]" />
         <div className="flex -space-x-1.5">
           {invoices.cards.map((c) => (
-            <BankLogo key={c.id} name={`${c.bank}: ${money(c.amount)}`} logo={c.logo} color={c.color} size="xs" />
+            <BankLogo key={c.id} name={`${c.bank}: ${money(c.amount)}`} bank={c.bank} logo={c.logo} color={c.color} size="xs" />
           ))}
         </div>
       </div>
