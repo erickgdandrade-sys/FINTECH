@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useFinance } from "@/lib/finance";
-import { NivoAppIcon, NivoLogo } from "./brand";
+import { NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
 import { NiviStage } from "./nivi-stage";
 import { NotificationsBell } from "./notifications";
@@ -214,6 +214,67 @@ function UserFooter({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/** Avatar do topo no celular: abre o menu (perfil, tema, demais seções). */
+function TopAvatar({ onOpen }: { onOpen: () => void }) {
+  const { session, avatarUrl } = useFinance();
+  const name = (session?.user.user_metadata?.name as string | undefined) ?? session?.user.email ?? "";
+  return (
+    <button
+      onClick={onOpen}
+      className="grid size-10 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-violet to-pink text-[13px] font-bold text-white ring-2 ring-surface"
+      aria-label="Abrir menu e perfil"
+    >
+      {avatarUrl ? <img src={avatarUrl} alt="" className="size-full object-cover" /> : name ? name.charAt(0).toUpperCase() : <Menu size={18} />}
+    </button>
+  );
+}
+
+const bottomItems: NavItem[] = [
+  { to: "/", label: "Início", icon: LayoutGrid },
+  { to: "/transacoes", label: "Extrato", icon: ArrowLeftRight },
+  { to: "/planejamento", label: "Planejar", icon: CalendarRange },
+  { to: "/metas", label: "Metas", icon: Target },
+];
+
+/** Barra de navegação inferior (celular), como num app. */
+function BottomNav({ onMore }: { onMore: () => void }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 px-2 pt-1.5 backdrop-blur lg:hidden"
+      style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+      aria-label="Navegação principal"
+    >
+      <ul className="mx-auto flex max-w-md items-stretch justify-between">
+        {bottomItems.map(({ to, label, icon: Icon }) => {
+          const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
+          return (
+            <li key={to} className="flex-1">
+              <Link
+                to={to}
+                className={clsx("flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold", active ? "text-violet" : "text-ink-3")}
+              >
+                <span className={clsx("grid h-7 w-12 place-items-center rounded-full transition-colors", active && "bg-violet-soft")}>
+                  <Icon size={19} strokeWidth={active ? 2.4 : 2} />
+                </span>
+                {label}
+              </Link>
+            </li>
+          );
+        })}
+        <li className="flex-1">
+          <button onClick={onMore} className="flex w-full flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold text-ink-3">
+            <span className="grid h-7 w-12 place-items-center rounded-full">
+              <Menu size={19} />
+            </span>
+            Mais
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [hidden, setHidden] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -265,24 +326,21 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* Topbar mobile */}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-surface/85 px-4 py-3 backdrop-blur lg:hidden">
-          <button
-            onClick={() => setDrawer(true)}
-            className="grid size-10 place-items-center rounded-xl bg-canvas"
-            aria-label="Abrir menu"
-          >
-            <Menu size={19} />
-          </button>
-          <Link to="/" className="flex items-center gap-2">
-            <NivoAppIcon className="size-8" />
-            <span className="text-lg font-extrabold tracking-[-0.04em]">Nivo</span>
+        <header className="sticky top-0 z-20 flex items-center justify-between bg-canvas/85 px-4 pt-3 pb-2 backdrop-blur lg:hidden">
+          <Link to="/" aria-label="Nivo — início">
+            <NivoLogo />
           </Link>
-          <NotificationsBell />
+          <div className="flex items-center gap-2">
+            <NotificationsBell />
+            <TopAvatar onOpen={() => setDrawer(true)} />
+          </div>
         </header>
 
         <main className="lg:pl-[248px]">
-          <div className="mx-auto max-w-[1360px] px-4 pt-5 pb-28 sm:px-6 lg:px-8 lg:pt-8">{children}</div>
+          <div className="mx-auto max-w-[1360px] px-4 pt-3 pb-40 sm:px-6 lg:px-8 lg:pt-8 lg:pb-28">{children}</div>
         </main>
+
+        <BottomNav onMore={() => setDrawer(true)} />
 
         <NiviStage />
         <NiviFab />

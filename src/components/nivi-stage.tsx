@@ -1,14 +1,27 @@
 /**
- * Palco do Nivi em pixel art: cenas animadas que aparecem na parte de baixo da tela.
- * - Visão geral: alterna cenas (corre, acena, pula e, com saldo alto, joga dinheiro).
+ * Palco do Nivi: cenas animadas que aparecem na parte de baixo da tela.
+ * - Visão geral: alterna cenas (corre, acena, pula, coração e, com saldo alto, joga dinheiro).
  * - Demais páginas: uma cena temática ao entrar na página.
  * Respeita "reduzir movimento" do sistema (não mostra nada).
  */
 import { useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
+import {
+  Banknote,
+  CalendarDays,
+  ClipboardList,
+  Coins,
+  Flag,
+  Hammer,
+  Heart,
+  Plug,
+  Search,
+  Sparkle,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useFinance } from "@/lib/finance";
-import { PROPS, Sprite, POSES, useFrames, type Pose } from "./pixel-nivi";
+import { NiviVector, type NiviPose } from "./nivi-vector";
 
 export type SceneName =
   | "run"
@@ -24,33 +37,54 @@ export type SceneName =
   | "build"
   | "love";
 
+type Prop = { icon: LucideIcon; color: string; fill?: string };
+
+const PROPS: Record<string, Prop> = {
+  magnifier: { icon: Search, color: "#00b8d4" },
+  flag: { icon: Flag, color: "#ff007a", fill: "#ff007a" },
+  clipboard: { icon: ClipboardList, color: "#6a00ff" },
+  plug: { icon: Plug, color: "#ff6b00" },
+  calendar: { icon: CalendarDays, color: "#6a00ff" },
+  hammer: { icon: Hammer, color: "#4a4668" },
+};
+
+const PARTICLES: Record<"money" | "coins" | "sparkles" | "hearts", Prop[]> = {
+  money: [
+    { icon: Banknote, color: "#0e9f5a", fill: "#c9f7dc" },
+    { icon: Banknote, color: "#0e9f5a", fill: "#c9f7dc" },
+    { icon: Coins, color: "#e08a00", fill: "#ffd25a" },
+  ],
+  coins: [{ icon: Coins, color: "#e08a00", fill: "#ffd25a" }],
+  sparkles: [{ icon: Sparkle, color: "#8fd400", fill: "#b8ff00" }],
+  hearts: [{ icon: Heart, color: "#ff007a", fill: "#ff007a" }],
+};
+
 type SceneDef = {
-  poses: Pose[];
-  ms: number;
+  pose: NiviPose;
   /** Animação do contêiner (keyframes em styles.css). */
   motion: string;
   duration: number;
   prop?: keyof typeof PROPS;
   propMotion?: string;
   bubble?: string;
-  particles?: "money" | "coins" | "sparkles" | "hearts";
+  particles?: keyof typeof PARTICLES;
   /** Posição horizontal inicial (0–1 da largura). */
   x?: number;
 };
 
 export const SCENES: Record<SceneName, SceneDef> = {
-  run: { poses: ["run1", "run2"], ms: 110, motion: "nivi-run", duration: 4600, x: 0 },
-  wave: { poses: ["wave1", "wave2"], ms: 280, motion: "nivi-peek", duration: 4200, bubble: "Oi!", x: 0.08 },
-  jump: { poses: ["cheer", "cheer2"], ms: 200, motion: "nivi-hop", duration: 3200, particles: "sparkles", x: 0.42 },
-  money: { poses: ["cheer", "cheer2"], ms: 160, motion: "nivi-pop", duration: 5200, particles: "money", bubble: "Tá rico, hein!", x: 0.3 },
-  search: { poses: ["run1", "idle", "run2", "idle"], ms: 240, motion: "nivi-patrol", duration: 6000, prop: "magnifier", propMotion: "prop-scan", bubble: "Conferindo cada centavo…", x: 0.1 },
-  celebrate: { poses: ["cheer", "cheer2"], ms: 200, motion: "nivi-hop", duration: 4200, prop: "flag", propMotion: "prop-wave", particles: "sparkles", bubble: "Rumo à meta!", x: 0.12 },
-  plan: { poses: ["idle", "blink", "idle", "idle"], ms: 400, motion: "nivi-peek", duration: 5000, prop: "clipboard", propMotion: "prop-write", bubble: "Planejando o próximo mês…", x: 0.1 },
-  coins: { poses: ["cheer", "cheer2"], ms: 260, motion: "nivi-peek", duration: 5000, particles: "coins", bubble: "Cada real no seu lugar.", x: 0.1 },
-  calendar: { poses: ["wave1", "wave2"], ms: 320, motion: "nivi-peek", duration: 4600, prop: "calendar", propMotion: "prop-bob", bubble: "Nada vence sem eu avisar.", x: 0.1 },
-  plug: { poses: ["idle", "blink"], ms: 500, motion: "nivi-peek", duration: 4600, prop: "plug", propMotion: "prop-plug", bubble: "Conectando seus bancos…", x: 0.1 },
-  build: { poses: ["idle", "idle"], ms: 400, motion: "nivi-peek", duration: 4800, prop: "hammer", propMotion: "prop-hammer", bubble: "Construindo esta tela!", x: 0.1 },
-  love: { poses: ["wave1", "wave2"], ms: 260, motion: "nivi-hop", duration: 3600, particles: "hearts", x: 0.5 },
+  run: { pose: "run", motion: "nivi-run", duration: 4600, x: 0 },
+  wave: { pose: "wave", motion: "nivi-peek", duration: 4200, bubble: "Oi!", x: 0.08 },
+  jump: { pose: "cheer", motion: "nivi-hop", duration: 3200, particles: "sparkles", x: 0.42 },
+  money: { pose: "cheer", motion: "nivi-pop", duration: 5200, particles: "money", bubble: "Tá rico, hein!", x: 0.3 },
+  search: { pose: "run", motion: "nivi-patrol", duration: 6000, prop: "magnifier", propMotion: "prop-scan", bubble: "Conferindo cada centavo…", x: 0.1 },
+  celebrate: { pose: "cheer", motion: "nivi-hop", duration: 4200, prop: "flag", propMotion: "prop-wave", particles: "sparkles", bubble: "Rumo à meta!", x: 0.12 },
+  plan: { pose: "think", motion: "nivi-peek", duration: 5000, prop: "clipboard", propMotion: "prop-write", bubble: "Planejando o próximo mês…", x: 0.1 },
+  coins: { pose: "cheer", motion: "nivi-peek", duration: 5000, particles: "coins", bubble: "Cada real no seu lugar.", x: 0.1 },
+  calendar: { pose: "wave", motion: "nivi-peek", duration: 4600, prop: "calendar", propMotion: "prop-bob", bubble: "Nada vence sem eu avisar.", x: 0.1 },
+  plug: { pose: "think", motion: "nivi-peek", duration: 4600, prop: "plug", propMotion: "prop-plug", bubble: "Conectando seus bancos…", x: 0.1 },
+  build: { pose: "think", motion: "nivi-peek", duration: 4800, prop: "hammer", propMotion: "prop-hammer", bubble: "Construindo esta tela!", x: 0.1 },
+  love: { pose: "wave", motion: "nivi-hop", duration: 3600, particles: "hearts", x: 0.5 },
 };
 
 const PAGE_SCENE: Record<string, SceneName> = {
@@ -82,7 +116,7 @@ function usePrefersReducedMotion() {
 }
 
 /** Partículas (dinheiro, moedas, brilhos, corações) que sobem e caem. */
-function Particles({ kind, count = 10 }: { kind: NonNullable<SceneDef["particles"]>; count?: number }) {
+function Particles({ kind, count = 10 }: { kind: keyof typeof PARTICLES; count?: number }) {
   const items = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
@@ -90,29 +124,33 @@ function Particles({ kind, count = 10 }: { kind: NonNullable<SceneDef["particles
         up: 90 + Math.round(Math.random() * 110),
         delay: Math.round(i * 160 + Math.random() * 120),
         rot: Math.round((Math.random() - 0.5) * 540),
-        prop: kind === "money" ? (i % 3 === 0 ? "coin" : "bill") : kind === "coins" ? "coin" : kind === "hearts" ? "heart" : "sparkle",
+        prop: PARTICLES[kind][i % PARTICLES[kind].length],
       })),
     [kind, count],
   );
   return (
     <div className="pointer-events-none absolute bottom-10 left-1/2">
-      {items.map((p, i) => (
-        <span
-          key={i}
-          className="nivi-particle absolute"
-          style={{ "--dx": `${p.dx}px`, "--up": `${p.up}px`, "--rot": `${p.rot}deg`, animationDelay: `${p.delay}ms` } as CSSProperties}
-        >
-          <Sprite rows={PROPS[p.prop]} className="size-6" />
-        </span>
-      ))}
+      {items.map((p, i) => {
+        const Icon = p.prop.icon;
+        return (
+          <span
+            key={i}
+            className="nivi-particle absolute"
+            style={{ "--dx": `${p.dx}px`, "--up": `${p.up}px`, "--rot": `${p.rot}deg`, animationDelay: `${p.delay}ms` } as CSSProperties}
+          >
+            <Icon size={24} color={p.prop.color} fill={p.prop.fill ?? "none"} strokeWidth={2.2} />
+          </span>
+        );
+      })}
     </div>
   );
 }
 
 /** Um Nivi executando uma cena. Usado no palco e na tela de login. */
-export function NiviActor({ scene, size = 64, loop = false }: { scene: SceneName; size?: number; loop?: boolean }) {
+export function NiviActor({ scene, size = 72, loop = false }: { scene: SceneName; size?: number; loop?: boolean }) {
   const def = SCENES[scene];
-  const pose = useFrames(def.poses, def.ms);
+  const prop = def.prop ? PROPS[def.prop] : null;
+  const PropIcon = prop?.icon;
   return (
     <div
       className={clsx("nivi-actor absolute bottom-0", def.motion)}
@@ -127,14 +165,17 @@ export function NiviActor({ scene, size = 64, loop = false }: { scene: SceneName
     >
       {def.particles && <Particles kind={def.particles} />}
       {def.bubble && (
-        <span className="nivi-bubble absolute bottom-full left-0 mb-1 rounded-md border-2 border-ink bg-surface px-2 py-1 text-[11px] font-bold whitespace-nowrap text-ink shadow-[2px_2px_0_var(--color-ink)]">
+        <span className="nivi-bubble absolute bottom-full left-0 mb-1 rounded-xl rounded-bl-sm bg-surface px-2.5 py-1.5 text-[11px] font-bold whitespace-nowrap text-ink shadow-[0_6px_16px_-6px_rgb(11_6_48/0.35)] ring-1 ring-line">
           {def.bubble}
         </span>
       )}
-      <Sprite rows={POSES[pose]} className="block w-full" />
-      {def.prop && (
-        <span className={clsx("absolute", def.propMotion)} style={{ width: size * 0.5, right: -size * 0.32, bottom: size * 0.32 }}>
-          <Sprite rows={PROPS[def.prop]} className="block w-full" />
+      <NiviVector pose={def.pose} className="block w-full drop-shadow-[0_6px_10px_rgb(11_6_48/0.25)]" />
+      {prop && PropIcon && (
+        <span
+          className={clsx("absolute grid place-items-center rounded-full bg-surface shadow-md ring-1 ring-line", def.propMotion)}
+          style={{ width: size * 0.42, height: size * 0.42, right: -size * 0.3, bottom: size * 0.42 }}
+        >
+          <PropIcon size={size * 0.24} color={prop.color} fill={prop.fill ?? "none"} strokeWidth={2.4} />
         </span>
       )}
     </div>
@@ -176,8 +217,7 @@ export function NiviStage() {
       play(first, 1200);
       timers.push(setTimeout(next, 1200 + SCENES[first].duration + 7000));
     } else {
-      const scene = PAGE_SCENE[pathname] ?? "wave";
-      play(scene, 700);
+      play(PAGE_SCENE[pathname] ?? "wave", 700);
     }
 
     return () => {
@@ -189,7 +229,7 @@ export function NiviStage() {
 
   if (!current) return null;
   return (
-    <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-30 h-72 overflow-hidden lg:left-[248px]" aria-hidden>
+    <div className="pointer-events-none fixed right-0 bottom-[68px] left-0 z-30 h-72 overflow-hidden lg:bottom-0 lg:left-[248px]" aria-hidden>
       <NiviActor key={current.id} scene={current.scene} />
     </div>
   );
@@ -198,7 +238,7 @@ export function NiviStage() {
 /** Palco da tela de login: o Nivi passa por várias cenas em sequência, sem parar. */
 const LOGIN_SEQUENCE: SceneName[] = ["wave", "run", "money", "celebrate", "search", "jump", "plug", "love", "build"];
 
-export function LoginStage() {
+export function LoginStage({ className = "h-60", size = 104 }: { className?: string; size?: number }) {
   const reduced = usePrefersReducedMotion();
   const [i, setI] = useState(0);
   const scene = LOGIN_SEQUENCE[i % LOGIN_SEQUENCE.length];
@@ -209,18 +249,16 @@ export function LoginStage() {
   }, [i, scene, reduced]);
 
   return (
-    <div className="relative h-56 w-full overflow-hidden" aria-hidden>
+    <div className={clsx("relative w-full overflow-hidden", className)} aria-hidden>
       {reduced ? (
-        <div className="absolute bottom-3 left-8 w-24">
-          <Sprite rows={POSES.wave1} className="block w-full" />
+        <div className="absolute bottom-0 left-12 w-28">
+          <NiviVector pose="wave" sparkle />
         </div>
       ) : (
-        <div className="absolute inset-x-0 top-0 bottom-3">
-          <NiviActor key={i} scene={scene} size={88} />
+        <div className="absolute inset-x-12 top-0 bottom-0">
+          <NiviActor key={i} scene={scene} size={size} />
         </div>
       )}
-      {/* chão em pixel */}
-      <div className="absolute inset-x-0 bottom-0 h-3 bg-[repeating-linear-gradient(90deg,#b8ff00_0_12px,#8fd400_12px_24px)]" />
     </div>
   );
 }

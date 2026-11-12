@@ -12,6 +12,7 @@ import {
   SpendingCard,
   useFirstName,
 } from "@/components/dashboard";
+import { MobileHome } from "@/components/mobile-home";
 import { useFinance } from "@/lib/finance";
 
 export const Route = createFileRoute("/")({
@@ -24,6 +25,7 @@ function Overview() {
   return (
     <>
       <PageHeader title={`Oi, ${name}`} subtitle={`Visão geral · ${summary.monthLabel}`} />
+      <MobileHome />
 
       <div className="grid gap-5 lg:grid-cols-3">
         <SpendingCard />
@@ -31,7 +33,7 @@ function Overview() {
           <DistributionCard />
         </div>
 
-        <div className="lg:col-span-3">
+        <div className="hidden lg:col-span-3 lg:block">
           <NiviGreeting />
         </div>
 

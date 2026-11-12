@@ -68,6 +68,12 @@ export function NiviFab() {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const open = () => setOpen(true);
+    window.addEventListener("nivi:open", open);
+    return () => window.removeEventListener("nivi:open", open);
+  }, []);
+
+  useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, typing]);
 
@@ -111,7 +117,7 @@ export function NiviFab() {
     <>
       <div
         className={clsx(
-          "fixed right-4 bottom-24 z-40 flex w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6",
+          "fixed right-4 bottom-44 z-40 flex w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_30px_60px_-20px_rgb(11_6_48/0.35)] ring-1 ring-line transition-all duration-200 sm:right-6 lg:bottom-24",
           open ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0",
         )}
         role="dialog"
@@ -203,15 +209,15 @@ export function NiviFab() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="nivo-gradient fixed right-4 bottom-5 z-40 flex h-14 items-center gap-2 rounded-full pr-5 pl-2 text-white shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 sm:right-6"
+        className="nivo-gradient fixed right-4 bottom-24 z-40 flex h-14 items-center gap-2 rounded-full pr-2 pl-2 lg:bottom-5 lg:pr-5 text-white shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 sm:right-6"
         aria-expanded={open}
         aria-label="Falar com o Nivi"
       >
         <span className="grid size-11 place-items-center rounded-full bg-surface/10">
           <Nivi className="size-9" sparkle={false} />
         </span>
-        <span className="text-[14px] font-bold">Nivi</span>
-        <Sparkles size={15} className="text-lime" />
+        <span className="hidden text-[14px] font-bold lg:inline">Nivi</span>
+        <Sparkles size={15} className="hidden text-lime lg:inline" />
       </button>
     </>
   );

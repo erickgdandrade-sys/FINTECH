@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useState } from "react";
-import { NivoLogo } from "@/components/brand";
+import { NivoLogo, NivoMark } from "@/components/brand";
 import { LoginStage } from "@/components/nivi-stage";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -49,8 +49,10 @@ function SignIn() {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       <div className="nivo-gradient relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
-        <NivoLogo dark />
-        <div>
+        {/* N gigante ao fundo, como na identidade visual */}
+        <NivoMark className="pointer-events-none absolute -top-16 -left-24 w-[120%] opacity-40" color="#3d0099" />
+        <NivoLogo dark className="relative" />
+        <div className="relative">
           <div className="-mx-12 mb-8">
             <LoginStage />
           </div>
@@ -61,13 +63,17 @@ function SignIn() {
             Conecte seus bancos pelo Open Finance e deixe o Nivi organizar tudo para você.
           </p>
         </div>
-        <p className="text-[12px] text-white/50">Conexão segura via Pluggy · regulada pelo Banco Central</p>
+        <p className="relative text-[12px] text-white/50">Conexão segura via Pluggy · regulada pelo Banco Central</p>
       </div>
 
       <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden">
+          <div className="mb-6 lg:hidden">
             <NivoLogo />
+            <div className="nivo-gradient relative mt-5 overflow-hidden rounded-3xl">
+              <NivoMark className="pointer-events-none absolute -top-6 -left-10 w-[110%] opacity-40" color="#3d0099" />
+              <LoginStage className="h-44" size={80} />
+            </div>
           </div>
           <h2 className="text-[26px] font-bold tracking-[-0.03em]">
             {mode === "entrar" ? "Entrar na sua conta" : "Criar sua conta"}

@@ -1,59 +1,59 @@
 import clsx from "clsx";
-import { PROPS, PixelNivi, Sprite } from "./pixel-nivi";
+import { useId } from "react";
+import { NiviVector } from "./nivi-vector";
 
-/** Marca "N" da Nivo — traço em zigue-zague ascendente (nível). */
+/**
+ * Marca "N" da Nivo: três traços inclinados (/ \ /) grossos, com cortes retos
+ * em cima e embaixo e junções arredondadas, como na identidade visual.
+ */
 export function NivoMark({ className, color = "currentColor" }: { className?: string; color?: string }) {
+  const id = useId().replace(/:/g, "");
   return (
-    <svg viewBox="0 0 64 44" className={className} aria-hidden="true">
+    <svg viewBox="0 0 112 64" className={className} aria-hidden="true">
+      <defs>
+        <clipPath id={`nm-${id}`}>
+          <rect x="0" y="0" width="112" height="64" rx="3" />
+        </clipPath>
+      </defs>
       <path
-        d="M6 38 L20 8 L36 34 L52 6"
+        d="M5.5 77 L35.5 16.9 Q40 8 46 16 L65.5 42 Q71.5 50 76 41 L106 -19"
         fill="none"
         stroke={color}
-        strokeWidth="11"
-        strokeLinecap="round"
+        strokeWidth="24"
         strokeLinejoin="round"
+        clipPath={`url(#nm-${id})`}
       />
     </svg>
   );
 }
 
+/** Ícone do app: quadrado arredondado limão com o N escuro. */
 export function NivoAppIcon({ className }: { className?: string }) {
   return (
     <span
       className={clsx(
-        "inline-grid place-items-center rounded-[28%] bg-lime shadow-[0_6px_16px_-6px_rgb(184_255_0/0.9)]",
+        "inline-grid place-items-center rounded-[26%] bg-lime shadow-[0_8px_18px_-8px_rgb(140_200_0/0.9)]",
         className,
       )}
     >
-      <NivoMark className="w-[62%]" color="#1a0a5c" />
+      <NivoMark className="w-[64%]" color="#1d0b5e" />
     </span>
   );
 }
 
+/** Logotipo: marca N limão + "Nivo" na fonte da marca. */
 export function NivoLogo({ dark = false, className }: { dark?: boolean; className?: string }) {
   return (
     <span className={clsx("inline-flex items-center gap-2", className)}>
-      <NivoMark className="h-6 w-auto" color="#b8ff00" />
-      <span className={clsx("text-[22px] font-extrabold tracking-[-0.04em]", dark ? "text-white" : "text-ink")}>
+      <NivoMark className="h-[22px] w-auto" color="#b8ff00" />
+      <span className={clsx("font-brand text-[29px] leading-none font-extrabold tracking-[-0.03em]", dark ? "text-white" : "text-ink")}>
         Nivo
       </span>
     </span>
   );
 }
 
-/** Nivi — assistente financeiro com IA, em pixel art (pisca sozinho). */
+/** Nivi — assistente financeiro com IA (vetorial, pisca e respira). */
 export function Nivi({ className, sparkle = true }: { className?: string; sparkle?: boolean }) {
-  return (
-    <span
-      className={clsx(
-        "inline-block [image-rendering:pixelated]",
-        !/\b(absolute|fixed)\b/.test(className ?? "") && "relative",
-        className,
-      )}
-      aria-hidden="true"
-    >
-      <PixelNivi className="absolute inset-[6%] size-[88%]" />
-      {sparkle && <Sprite rows={PROPS.sparkle} className="absolute -top-[4%] -right-[6%] size-[30%] nivi-twinkle" />}
-    </span>
-  );
+  return <NiviVector pose="idle" sparkle={sparkle} className={clsx("inline-block", className)} />;
 }
