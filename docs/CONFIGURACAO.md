@@ -10,10 +10,11 @@ Nenhuma chave vai para o código: tudo fica no arquivo `.env` (que não é envia
 2. No menu lateral, abra **SQL Editor → New query**, cole o conteúdo de
    `supabase/migrations/0001_open_finance.sql` e clique em **Run**.
    Isso cria as tabelas de bancos conectados, contas e transações, com cada usuário vendo só os próprios dados.
-3. Abra **Project Settings → API** e copie para o `.env`:
-   - **Project URL** → `VITE_SUPABASE_URL`
-   - **anon public** → `VITE_SUPABASE_ANON_KEY`
-   - **service_role** (clique em "Reveal") → `SUPABASE_SERVICE_ROLE_KEY`
+3. Copie para o `.env`:
+   - **Project URL** (Settings → Data API, ou botão **Connect**) → `VITE_SUPABASE_URL`
+   - **Publishable key** `sb_publishable_...` (Settings → API Keys) → `VITE_SUPABASE_ANON_KEY`
+   - **Secret key** `sb_secret_...` (Settings → API Keys, ícone do olho) → `SUPABASE_SERVICE_ROLE_KEY`
+   (Projetos antigos: use as chaves legadas "anon" e "service_role" nos mesmos campos.)
      ⚠️ Essa chave dá acesso total ao banco. Nunca compartilhe nem coloque no app de celular.
 4. (Opcional, para testes) Em **Authentication → Sign In / Providers → Email**, desligue
    **Confirm email** para poder entrar logo após criar a conta.
