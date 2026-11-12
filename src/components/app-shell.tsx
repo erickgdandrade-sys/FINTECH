@@ -27,6 +27,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useFinance } from "@/lib/finance";
 import { NivoAppIcon, NivoLogo } from "./brand";
 import { NiviFab } from "./nivi-chat";
+import { NiviStage } from "./nivi-stage";
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
 
@@ -249,6 +250,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mx-auto max-w-[1360px] px-4 pt-5 pb-28 sm:px-6 lg:px-8 lg:pt-8">{children}</div>
         </main>
 
+        <NiviStage />
         <NiviFab />
       </div>
     </PrivacyCtx.Provider>

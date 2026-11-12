@@ -10,22 +10,29 @@ import {
   RecurrencesCard,
   ResultCard,
   SpendingCard,
+  useFirstName,
 } from "@/components/dashboard";
+import { useFinance } from "@/lib/finance";
 
 export const Route = createFileRoute("/")({
   component: Overview,
 });
 
 function Overview() {
+  const name = useFirstName();
+  const { summary } = useFinance();
   return (
     <>
-      <PageHeader title="Visão Geral" />
-      <NiviGreeting />
+      <PageHeader title={`Oi, ${name}`} subtitle={`Visão geral · ${summary.monthLabel}`} />
 
       <div className="grid gap-5 lg:grid-cols-3">
         <SpendingCard />
         <div className="lg:col-span-2">
           <DistributionCard />
+        </div>
+
+        <div className="lg:col-span-3">
+          <NiviGreeting />
         </div>
 
         <div className="flex flex-col gap-5">

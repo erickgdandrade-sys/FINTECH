@@ -107,3 +107,94 @@
 @media (prefers-reduced-motion: reduce) {
   .nivi-eyes, .rise { animation: none; }
 }
+
+/* ───────────── Nivi pixel art: cenas ───────────── */
+.nivi-actor {
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  image-rendering: pixelated;
+}
+@keyframes nivi-run {
+  from { transform: translateX(-90px); }
+  to { transform: translateX(calc(100vw - 120px)); }
+}
+.nivi-run { animation-name: nivi-run; }
+
+@keyframes nivi-peek {
+  0% { transform: translateY(115%); }
+  12%, 86% { transform: translateY(0); }
+  100% { transform: translateY(115%); }
+}
+.nivi-peek { animation-name: nivi-peek; }
+
+@keyframes nivi-hop {
+  0% { transform: translateY(115%); }
+  10% { transform: translateY(0); }
+  20% { transform: translateY(-28px); }
+  30% { transform: translateY(0); }
+  40% { transform: translateY(-28px); }
+  50% { transform: translateY(0); }
+  60% { transform: translateY(-28px); }
+  70%, 88% { transform: translateY(0); }
+  100% { transform: translateY(115%); }
+}
+.nivi-hop { animation-name: nivi-hop; }
+
+@keyframes nivi-pop {
+  0% { transform: translateY(115%); }
+  8% { transform: translateY(-10px); }
+  12%, 30% { transform: translateY(0); }
+  34% { transform: translateY(-8px); }
+  38%, 60% { transform: translateY(0); }
+  64% { transform: translateY(-8px); }
+  68%, 88% { transform: translateY(0); }
+  100% { transform: translateY(115%); }
+}
+.nivi-pop { animation-name: nivi-pop; }
+
+@keyframes nivi-patrol {
+  0% { transform: translate(0, 115%); }
+  8% { transform: translate(0, 0); }
+  45%, 52% { transform: translate(180px, 0); }
+  86% { transform: translate(0, 0); }
+  100% { transform: translate(0, 115%); }
+}
+.nivi-patrol { animation-name: nivi-patrol; }
+
+.nivi-bubble { animation: bubble-in 0.35s 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+@keyframes bubble-in {
+  from { opacity: 0; transform: translate(-50%, 6px) scale(0.6); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.nivi-particle {
+  animation: particle-fly 1.9s cubic-bezier(0.25, 0.7, 0.4, 1) both;
+  image-rendering: pixelated;
+}
+@keyframes particle-fly {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  10% { opacity: 1; }
+  55% { transform: translate(var(--dx), calc(var(--up) * -1)) rotate(calc(var(--rot) / 2)); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 1.3), calc(var(--up) * -0.35)) rotate(var(--rot)); }
+}
+
+.prop-scan { animation: prop-scan 0.9s ease-in-out infinite; transform-origin: 20% 80%; }
+@keyframes prop-scan { 0%, 100% { transform: rotate(-12deg) translateY(0); } 50% { transform: rotate(10deg) translateY(-4px); } }
+.prop-wave { animation: prop-wave 0.5s ease-in-out infinite; transform-origin: 0 100%; }
+@keyframes prop-wave { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(12deg); } }
+.prop-write { animation: prop-write 0.6s steps(2) infinite; }
+@keyframes prop-write { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.prop-bob { animation: prop-bob 0.8s ease-in-out infinite; }
+@keyframes prop-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.prop-plug { animation: prop-plug 0.35s steps(2) infinite; }
+@keyframes prop-plug { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+.prop-hammer { animation: prop-hammer 0.45s ease-in infinite; transform-origin: 40% 100%; }
+@keyframes prop-hammer { 0%, 100% { transform: rotate(-45deg); } 60% { transform: rotate(25deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .nivi-actor, .nivi-particle, .nivi-bubble, [class*="prop-"] { animation: none !important; }
+}
+
+.nivi-twinkle { animation: twinkle 1.6s steps(2) infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }

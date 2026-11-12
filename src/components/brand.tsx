@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { PROPS, PixelNivi, Sprite } from "./pixel-nivi";
 
 /** Marca "N" da Nivo — traço em zigue-zague ascendente (nível). */
 export function NivoMark({ className, color = "currentColor" }: { className?: string; color?: string }) {
@@ -40,40 +41,19 @@ export function NivoLogo({ dark = false, className }: { dark?: boolean; classNam
   );
 }
 
-/** Nivi — assistente financeiro com IA. */
+/** Nivi — assistente financeiro com IA, em pixel art (pisca sozinho). */
 export function Nivi({ className, sparkle = true }: { className?: string; sparkle?: boolean }) {
   return (
-    <svg viewBox="0 0 120 110" className={className} aria-hidden="true">
-      {sparkle && (
-        <g stroke="#b8ff00" strokeWidth="6" strokeLinecap="round">
-          <path d="M96 10 L90 24" />
-          <path d="M110 22 L98 30" />
-        </g>
+    <span
+      className={clsx(
+        "inline-block [image-rendering:pixelated]",
+        !/\b(absolute|fixed)\b/.test(className ?? "") && "relative",
+        className,
       )}
-      {/* antenas */}
-      <rect x="38" y="8" width="11" height="20" rx="3" fill="#fff" />
-      <rect x="62" y="8" width="11" height="20" rx="3" fill="#fff" />
-      {/* braços */}
-      <rect x="8" y="50" width="18" height="14" rx="4" fill="#fff" />
-      <rect x="86" y="50" width="18" height="14" rx="4" fill="#fff" />
-      {/* pés */}
-      <rect x="36" y="86" width="13" height="18" rx="3" fill="#fff" />
-      <rect x="63" y="86" width="13" height="18" rx="3" fill="#fff" />
-      {/* corpo */}
-      <rect x="22" y="24" width="68" height="66" rx="20" fill="#fff" />
-      <rect x="22" y="24" width="68" height="66" rx="20" fill="url(#niviShade)" />
-      {/* visor */}
-      <rect x="32" y="38" width="48" height="32" rx="10" fill="#1a0a5c" />
-      <g className="nivi-eyes" stroke="#b8ff00" strokeWidth="4.5" strokeLinecap="round" fill="none">
-        <path d="M41 58 a6 6 0 0 1 12 0" />
-        <path d="M59 58 a6 6 0 0 1 12 0" />
-      </g>
-      <defs>
-        <linearGradient id="niviShade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
-          <stop offset="1" stopColor="#d9d3f5" stopOpacity="0.7" />
-        </linearGradient>
-      </defs>
-    </svg>
+      aria-hidden="true"
+    >
+      <PixelNivi className="absolute inset-[6%] size-[88%]" />
+      {sparkle && <Sprite rows={PROPS.sparkle} className="absolute -top-[4%] -right-[6%] size-[30%] nivi-twinkle" />}
+    </span>
   );
 }

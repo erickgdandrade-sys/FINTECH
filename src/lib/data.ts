@@ -135,7 +135,7 @@ export const goals = [
     name: "Viagem Chile 2026",
     current: 14000,
     target: 15000,
-    due: "05/10/2026",
+    due: "05/03/2027",
     priority: true,
     icon: "viagem" as GoalIconKey,
     color: "#6a00ff",

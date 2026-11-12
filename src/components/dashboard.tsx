@@ -500,18 +500,25 @@ export function GoalsCard() {
 }
 
 /* ───────────────── Saudação do Nivi ───────────────── */
+/** Primeiro nome do usuário logado (ou do exemplo). */
+export function useFirstName() {
+  const { session } = useFinance();
+  const raw = (session?.user.user_metadata?.name as string | undefined) ?? session?.user.email?.split("@")[0] ?? "Richard";
+  const first = raw.trim().split(/\s+/)[0];
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
 export function NiviGreeting() {
-  const { summary: month, session } = useFinance();
+  const { summary: month } = useFinance();
   const pace = month.pace;
   const top = month.distribution[0];
-  const name = session?.user.user_metadata?.name ?? session?.user.email?.split("@")[0] ?? "Richard";
   return (
-    <div className="rise relative mb-5 flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-white to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
+    <div className="rise relative flex items-center gap-4 overflow-hidden rounded-[22px] bg-gradient-to-r from-violet-soft via-white to-lime-soft p-4 pr-5 ring-1 ring-line sm:p-5">
       <span className="nivo-gradient grid size-14 shrink-0 place-items-center rounded-2xl">
         <Nivi className="size-12" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[16px] font-bold tracking-[-0.02em]">Oi, {name}! Eu sou o Nivi.</p>
+        <p className="text-[16px] font-bold tracking-[-0.02em]">Resumo do Nivi</p>
         <p className="text-[13px] text-ink-2">
           Analisei suas finanças: você está{" "}
           <b className={pace.diff >= 0 ? "text-positive" : "text-pink"}>
